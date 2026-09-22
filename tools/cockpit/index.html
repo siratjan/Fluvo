@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fluvo Cockpit</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --panel: #ffffff; --panel-2: #f0eee8; --line: #e2dfd6; --text: #1d1c1a; --muted: #6b6860; --accent: #0e7c86;
+    --c-cyan: #0e8a96; --c-blue: #2f6fdb; --c-green: #2e8b57; --c-yellow: #b8860b; --c-red: #c8402f; --c-purple: #7a4fd0; --c-orange: #d2691e; --c-pink: #c9488a; --c-gray: #7a776f;
+    --ok: #2e8b57; --warn: #b8860b; --bad: #c8402f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --panel: #1f1e1c; --panel-2: #282724; --line: #35332f; --text: #ecebe6; --muted: #a09d94; --accent: #4cc3cf;
+      --c-cyan: #4cc3cf; --c-blue: #6f9df0; --c-green: #5dbb85; --c-yellow: #e0b341; --c-red: #ee6a59; --c-purple: #a98af0; --c-orange: #f0924a; --c-pink: #ee7db4; --c-gray: #a09d94;
+      --ok: #5dbb85; --warn: #e0b341; --bad: #ee6a59;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+  h1 { font-size: 17px; margin: 0; letter-spacing: .2px; } h1 span { color: var(--accent); }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav button { border: 1px solid transparent; background: none; color: var(--muted); padding: 6px 12px; border-radius: 8px; font: inherit; cursor: pointer; }
+  nav button:hover { color: var(--text); background: var(--panel-2); }
+  nav button[aria-selected="true"] { color: var(--text); background: var(--panel-2); border-color: var(--line); font-weight: 600; }
+  .pulse { margin-left: auto; display: flex; gap: 14px; align-items: center; color: var(--muted); font-size: 13px; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--c-gray); margin-right: 6px; vertical-align: 1px; }
+  .dot.live { background: var(--ok); box-shadow: 0 0 0 0 var(--ok); animation: ping 1.8s infinite; }
+  @keyframes ping { 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+  @media (prefers-reduced-motion: reduce) { .dot.live { animation: none; } }
+  main { padding: 20px; max-width: 1500px; margin: 0 auto; }
+  section[hidden] { display: none; }
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin: 26px 0 10px; font-weight: 600; }
+  h2:first-child { margin-top: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .muted { color: var(--muted); } .small { font-size: 13px; } .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12.5px; }
+  .empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; padding: 18px; text-align: center; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 1px 9px; font-size: 12.5px; border: 1px solid var(--line); background: var(--panel-2); white-space: nowrap; }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  a, .link { color: var(--accent); cursor: pointer; text-decoration: none; background: none; border: 0; padding: 0; font: inherit; } a:hover, .link:hover { text-decoration: underline; }
+
+  /* Board */
+  .board { display: grid; grid-template-columns: repeat(5, minmax(210px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+  .col { background: var(--panel-2); border-radius: 12px; padding: 10px; min-height: 120px; }
+  .col h3 { margin: 2px 4px 10px; font-size: 13px; display: flex; justify-content: space-between; color: var(--muted); font-weight: 600; }
+  .ap { display: block; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; margin-bottom: 8px; }
+  .ap:hover, .ap:focus-visible { border-color: var(--accent); outline: none; }
+  .ap .id { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; }
+  .ap .t { font-weight: 600; margin: 2px 0 6px; line-height: 1.3; }
+  .bar { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; margin: 6px 0; } .bar b { display: block; height: 100%; background: var(--ok); }
+  .steps { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin: 8px 0 2px; }
+  .steps i { height: 6px; border-radius: 3px; background: var(--line); } .steps i.done { background: var(--ok); } .steps i.now { background: var(--c-orange); }
+  .cycle { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+  .cycle div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px; } .cycle div b { display: block; }
+  .cycle div.done { border-color: var(--ok); } .cycle div.now { border-color: var(--c-orange); background: color-mix(in srgb, var(--c-orange) 12%, transparent); }
+  .dots { display: flex; gap: 4px; flex-wrap: wrap; } .dots i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; } td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  tr:last-child td { border-bottom: 0; }
+  .st { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+  .st.ok { color: var(--ok); border-color: var(--ok); } .st.now { color: var(--accent); border-color: var(--accent); } .st.bad { color: var(--bad); border-color: var(--bad); }
+
+  /* Live */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .stat b { display: block; font-size: 26px; line-height: 1.1; } .stat span { color: var(--muted); font-size: 13px; }
+  .active { display: flex; gap: 10px; flex-wrap: wrap; }
+  .active .card { border-left: 4px solid var(--c-gray); min-width: 220px; }
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  .timeline li { display: grid; grid-template-columns: 64px 170px 1fr; gap: 10px; padding: 6px 4px; border-bottom: 1px solid var(--line); align-items: baseline; font-size: 13.5px; }
+  .timeline li.blocked { background: color-mix(in srgb, var(--bad) 9%, transparent); } .timeline li.warning { background: color-mix(in srgb, var(--warn) 9%, transparent); }
+  .timeline .day { grid-template-columns: 1fr; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; padding-top: 14px; border: 0; }
+  @media (max-width: 720px) { .timeline li { grid-template-columns: 52px 1fr; } .timeline li > :nth-child(3) { grid-column: 1 / -1; } }
+
+  /* Team */
+  .org { display: grid; gap: 14px; }
+  .jarvis { border-left: 5px solid var(--c-cyan); }
+  .lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; }
+  .lane { border-top: 4px solid var(--c-gray); } .lane h3 { margin: 0 0 8px; font-size: 14px; }
+  .agent { padding: 8px 0; border-top: 1px solid var(--line); } .agent:first-of-type { border-top: 0; }
+  .agent .n { font-weight: 600; } .agent p { margin: 2px 0 4px; font-size: 13px; color: var(--muted); }
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .flow span.arrow { color: var(--muted); }
+
+  /* Drawer */
+  .drawer { position: fixed; inset: 0 0 0 auto; width: min(760px, 100%); background: var(--panel); border-left: 1px solid var(--line); box-shadow: -12px 0 40px rgba(0,0,0,.25); padding: 18px 22px 40px; overflow-y: auto; z-index: 20; }
+  .drawer[hidden] { display: none; }
+  .drawer .close { position: sticky; top: 0; float: right; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 8px; padding: 4px 10px; cursor: pointer; font: inherit; }
+  .md h1 { font-size: 20px; margin: 4px 0 10px; } .md h2 { text-transform: none; letter-spacing: 0; font-size: 16px; color: var(--text); margin: 20px 0 6px; } .md h3 { font-size: 14.5px; margin: 16px 0 4px; }
+  .md p { margin: 6px 0; } .md ul { margin: 4px 0; padding-left: 20px; } .md code { background: var(--panel-2); padding: 0 4px; border-radius: 4px; font-size: 12.5px; }
+  .md pre { background: var(--panel-2); padding: 10px; border-radius: 8px; overflow-x: auto; font-size: 12.5px; } .md blockquote { margin: 6px 0; padding-left: 12px; border-left: 3px solid var(--line); color: var(--muted); }
+  .md .tbl { overflow-x: auto; }
+  .md pre.mermaid { background: var(--panel); border: 1px solid var(--line); text-align: center; }
+  .progress { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--line); } .progress b { display: block; height: 100%; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span>fluvo</span> Cockpit</h1>
+  <nav role="tablist" aria-label="Ansichten">
+    <button role="tab" data-tab="board" aria-selected="true">Board</button>
+    <button role="tab" data-tab="concept" aria-selected="false">Konzept</button>
+    <button role="tab" data-tab="live" aria-selected="false">Live</button>
+    <button role="tab" data-tab="team" aria-selected="false">Team</button>
+    <button role="tab" data-tab="ops" aria-selected="false">Betrieb</button>
+  </nav>
+  <div class="pulse"><span id="pulse-jarvis"></span><span id="pulse-active"></span><span id="pulse-time" class="mono"></span></div>
+</header>
+<main>
+  <section id="tab-board"></section>
+  <section id="tab-concept" hidden></section>
+  <section id="tab-live" hidden></section>
+  <section id="tab-team" hidden></section>
+  <section id="tab-ops" hidden></section>
+</main>
+<aside class="drawer" id="drawer" hidden aria-label="Details"><button class="close" id="drawer-close">Schließen ✕</button><div id="drawer-body"></div></aside>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const COLORS = ['cyan', 'blue', 'green', 'yellow', 'red', 'purple', 'orange', 'pink'];
+const cvar = (c) => `var(--c-${COLORS.includes(c) ? c : 'gray'})`;
+let state = null, colorOf = {};
+const agentColor = (name) => cvar(colorOf[name] || (name === 'jarvis' ? 'cyan' : 'gray'));
+const chip = (name) => `<span class="chip"><i style="background:${agentColor(name)}"></i>${esc(name)}</span>`;
+const fileLink = (path, label) => `<button class="link" data-file="${esc(path)}">${esc(label || path)}</button>`;
+const time = (ts) => new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+const ago = (ts) => { const m = Math.round((Date.now() - Date.parse(ts)) / 60000); return m < 1 ? 'gerade eben' : m < 60 ? `seit ${m} Min` : `seit ${Math.floor(m / 60)} Std ${m % 60} Min`; };
+const stClass = (s) => /fertig|angenommen/i.test(s) ? 'ok' : /in Arbeit|als Nächstes|freigegeben/i.test(s) ? 'now' : /blockiert|abgelehnt/i.test(s) ? 'bad' : '';
+
+// ---------- Mini-Markdown (nur Anzeige; alles wird zuerst maskiert) ----------
+function md(text) {
+  text = text.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, (m) => '```\n' + m.trim() + '\n```\n');
+  const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1');
+  const out = []; let list = false, code = false, table = [];
+  const flushTable = () => { if (!table.length) return; const rows = table.filter((r) => !/^\|\s*:?-{2,}/.test(r)).map((r) => r.split('|').slice(1, -1)); out.push('<div class="tbl"><table>' + rows.map((r, i) => '<tr>' + r.map((c) => `<${i ? 'td' : 'th'}>${inline(c.trim())}</${i ? 'td' : 'th'}>`).join('') + '</tr>').join('') + '</table></div>'); table = []; };
+  const closeList = () => { if (list) { out.push('</ul>'); list = false; } };
+  for (const line of text.split(/\r?\n/)) {
+    if (/^```/.test(line)) { flushTable(); closeList(); out.push(code ? '</pre>' : (/^```mermaid/.test(line) ? '<pre class="mermaid">' : '<pre>')); code = !code; continue; }
+    if (code) { out.push(esc(line)); continue; }
+    if (/^\|/.test(line)) { closeList(); table.push(line); continue; } flushTable();
+    const h = line.match(/^(#{1,4})\s+(.*)$/);
+    if (h) { closeList(); out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`); continue; }
+    const li = line.match(/^\s*(?:[-*]|\d+\.)\s+(.*)$/);
+    if (li) { if (!list) { out.push('<ul>'); list = true; } out.push('<li>' + inline(li[1]).replace(/^\[( |x|X)\]/, (m, c) => c === ' ' ? '☐' : '☑') + '</li>'); continue; }
+    closeList();
+    if (/^>/.test(line)) out.push('<blockquote>' + inline(line.replace(/^>\s?/, '')) + '</blockquote>');
+    else if (line.trim()) out.push('<p>' + inline(line) + '</p>');
+  }
+  flushTable(); closeList(); if (code) out.push('</pre>');
+  return '<div class="md">' + out.join('\n') + '</div>';
+}
+
+// ---------- Arbeitszyklus ----------
+const PHASES = [['Planen', '/plan', 'Anforderungen, Risiken, Schritte. Wartet auf Sirats Freigabe.'], ['Testen zuerst', 'tdd-guide', 'Nutzerreisen werden zu Tests. Rot, dann grün.'], ['Bauen', 'im TDD-Ablauf', 'Nur so viel Code, dass die Tests bestehen.'], ['Prüfen', '/review', 'Ein zweiter Agent ohne Vorwissen begutachtet.'], ['Verifizieren', '/verify', 'Standards, Sicherheit, Abdeckung.'], ['Sichern', '/handoff', 'Stand festhalten, Gelerntes speichern.']];
+const phaseState = (p, i) => { const idx = PHASES.findIndex(([n]) => n === p.phase); const ticked = p.cycle.find((c) => c.n === i + 1)?.done; return ticked || (p.status === 'fertig (geprüft)' && p.code) ? 'done' : idx === i ? 'now' : idx > i ? 'done' : ''; };
+const stepsHtml = (p) => p.code || p.phase ? `<div class="steps" title="Arbeitszyklus: ${esc(p.phase || 'noch nicht begonnen')}">${PHASES.map((_, i) => `<i class="${phaseState(p, i)}"></i>`).join('')}</div><div class="small muted">${p.phase ? 'Phase: ' + esc(p.phase) : 'Zyklus noch nicht begonnen'}</div>` : '';
+
+// ---------- Board ----------
+const COLS = [['vorgeschlagen', 'Vorgeschlagen'], ['freigegeben', 'Freigegeben'], ['in Arbeit', 'In Arbeit'], ['blockiert', 'Blockiert'], ['fertig (geprüft)', 'Fertig (geprüft)']];
+function renderBoard(s) {
+  const aps = s.packages, dropped = aps.filter((p) => p.status === 'verworfen').length;
+  const col = ([key, label]) => {
+    const items = aps.filter((p) => p.status === key);
+    return `<div class="col"><h3><span>${label}</span><span>${items.length}</span></h3>` + (items.map((p) => {
+      const done = p.criteria.filter((c) => c.done).length, pct = p.criteria.length ? Math.round(100 * done / p.criteria.length) : 0;
+      return `<button class="card ap" data-ap="${esc(p.id)}"><div class="id"><span>${esc(p.id)}${p.roadmap ? ' · ' + esc(p.roadmap) : ''}</span><span>${p.code ? 'Code' : 'kein Code'}</span></div><div class="t">${esc(p.title)}</div>
+        <div class="dots" aria-label="Team">${p.team.map((t) => `<i title="${esc(t.who)}" style="background:${agentColor(t.who.split(/[ ,(]/)[0])}"></i>`).join('')}</div>
+        ${stepsHtml(p)}<div class="bar"><b style="width:${pct}%"></b></div><div class="small muted">${done}/${p.criteria.length} Kriterien${p.changed ? ' · ' + esc(p.changed) : ''}</div></button>`;
+    }).join('') || '<div class="small muted" style="padding:4px">—</div>') + '</div>';
+  };
+  const rm = s.docs.roadmap, q = s.docs.questions.filter((x) => x.open);
+  $('#tab-board').innerHTML = `
+    <h2>Arbeitspakete</h2>
+    ${aps.length ? `<div class="board">${COLS.map(col).join('')}</div>${dropped ? `<p class="small muted">${dropped} verworfen (nicht angezeigt)</p>` : ''}` : '<div class="empty">Noch keine Arbeitspakete. Sag Jarvis, was du willst — oder frag ihn „Was steht an?".</div>'}
+    <div class="grid2" style="margin-top:22px">
+      <div><h2>Roadmap</h2><div class="card"><table>${rm.map((r) => `<tr><td class="mono">${esc(r.id)}</td><td>${esc(r.title)}${r.note && r.note !== '—' ? `<div class="small muted">${esc(r.note)}</div>` : ''}</td><td><span class="st ${stClass(r.status)}">${esc(r.status)}</span></td></tr>`).join('')}</table></div></div>
+      <div>
+        <h2>Offene Fragen (${q.length}) — entscheidet Sirat</h2><div class="card"><table>${q.map((x) => `<tr><td>${esc(x.title)}</td></tr>`).join('') || '<tr><td class="muted">keine</td></tr>'}</table><p class="small" style="margin:8px 0 0">${fileLink('docs/open-questions.md', 'Alle Fragen mit Hintergrund öffnen')}</p></div>
+        <h2>Entscheidungen</h2><div class="card"><table>${s.docs.decisions.map((d) => `<tr><td>${fileLink(d.file, d.title)}</td><td><span class="st ${stClass(d.status)}">${esc(d.status)}</span></td></tr>`).join('')}</table></div>
+        <h2>Übergaben</h2><div class="card">${s.docs.handoffs.map((h) => `<div>${fileLink(h.file, h.title)}</div>`).join('') || '<span class="muted small">Noch keine. Entsteht mit /handoff.</span>'}</div>
+      </div>
+    </div>`;
+}
+
+function openAp(id) {
+  const p = state.packages.find((x) => x.id === id); if (!p) return;
+  $('#drawer-body').innerHTML = `<p class="small muted">${esc(p.id)} · <span class="st ${stClass(p.status)}">${esc(p.status)}</span> · ${p.code ? 'Code entsteht' : 'kein Code'} ${p.origin ? ' · ' + esc(p.origin) : ''}</p>
+    <h1 style="font-size:21px;margin:4px 0 12px">${esc(p.title)}</h1>
+    ${p.code || p.phase ? `<h2>Arbeitszyklus</h2><div class="cycle">${PHASES.map(([n, how], i) => { const c = p.cycle.find((x) => x.n === i + 1); return `<div class="${phaseState(p, i)}"><b>${i + 1} · ${esc(n)}</b><span class="mono muted">${esc(how)}</span>${c?.note ? `<div class="small muted">${esc(c.note)}</div>` : ''}</div>`; }).join('')}</div>` : '<p class="small muted">Paket ohne Code — verkürzter Ablauf: Planen → Erarbeiten → Prüfen → Sichern.</p>'}
+    <h2>Ziel</h2>${md(p.goal || '—')}
+    <h2>Abnahmekriterien</h2><div class="card">${p.criteria.map((c) => `<div>${c.done ? '☑' : '☐'} ${esc(c.text)}</div>`).join('') || '<span class="muted">keine</span>'}</div>
+    <h2>Team</h2><div class="card"><table>${p.team.map((t) => `<tr><td class="mono">${esc(t.order)}</td><td>${chip(t.who.split(/[ ,(]/)[0])}${t.who.includes(' ') ? ' <span class="small muted">' + esc(t.who.split(' ').slice(1).join(' ')) + '</span>' : ''}</td><td class="small">${esc(t.why)}</td></tr>`).join('') || '<tr><td class="muted">noch nicht gewählt</td></tr>'}</table></div>
+    ${p.needs ? `<h2>Braucht von Sirat</h2>${md(p.needs)}` : ''}
+    <h2>Ergebnis</h2>${md(p.result || '_Noch offen._')}
+    <p class="small" style="margin-top:18px">${fileLink(p.file, 'Ganze Datei öffnen')}</p>`;
+  $('#drawer').hidden = false;
+}
+
+// ---------- Konzept ----------
+const cStatus = (s) => /abgenommen/i.test(s) ? 'ok' : /durchgegangen|Entwurf/i.test(s) ? 'now' : '';
+function renderConcept(s) {
+  const c = s.concept;
+  if (!c) { $('#tab-concept').innerHTML = '<div class="empty">Noch keine Konzept-Landkarte (docs/konzept/README.md).</div>'; return; }
+  const n = c.artifacts.length || 1, done = c.artifacts.filter((a) => /abgenommen/i.test(a.status)).length, wip = c.artifacts.filter((a) => /Entwurf|durchgegangen/i.test(a.status)).length;
+  const apOf = (id) => s.packages.find((p) => p.id === id);
+  const byDir = {}; for (const f of c.files) (byDir[f.dir] ||= []).push(f);
+  const DIRS = { anwendungsfaelle: 'Anwendungsfälle', modelle: 'Modelle und Diagramme', vertraege: 'Verträge', gespraech: 'Gesprächsdesign', oberflaechen: 'Oberflächen', '.': 'Weitere' };
+  $('#tab-concept').innerHTML = `
+    <h2>Fortschritt — ${done} von ${c.artifacts.length} abgenommen, ${wip} in Arbeit</h2>
+    <div class="progress"><b style="width:${100 * done / n}%;background:var(--ok)"></b><b style="width:${100 * wip / n}%;background:var(--c-orange)"></b></div>
+    <h2>Artefakte — Reihenfolge ist Absicht</h2>
+    <div class="card"><table><tr><th>ID</th><th>Artefakt</th><th>Status</th><th>Paket</th><th>Vorbild Advansure</th></tr>${c.artifacts.map((a) => { const p = apOf(a.ap); return `<tr><td class="mono">${esc(a.id)}</td><td>${esc(a.title)}</td><td><span class="st ${cStatus(a.status)}">${esc(a.status)}</span></td><td>${p ? `<button class="link" data-ap="${esc(p.id)}">${esc(p.id)}</button> <span class="small muted">${esc(p.status)}</span>` : esc(a.ap)}</td><td class="small muted">${esc(a.origin)}</td></tr>`; }).join('')}</table>
+      <p class="small" style="margin:8px 0 0">${fileLink('docs/konzept/README.md', 'Landkarte öffnen')}</p></div>
+    <div class="grid2" style="margin-top:8px">
+      <div><h2>Fachliche Anwendungsfälle (${c.useCases.length})</h2><div class="card"><table>${c.useCases.map((u) => { const f = c.files.find((x) => x.file.includes('/' + u.id)); return `<tr><td class="mono">${esc(u.id)}</td><td>${f ? fileLink(f.file, u.title) : esc(u.title)}<div class="small muted">${esc(u.actor)}</div></td><td><span class="st ${cStatus((f && f.status) || u.status)}">${esc((f && f.status) || u.status)}</span></td></tr>`; }).join('') || '<tr><td class="muted">noch keine</td></tr>'}</table></div></div>
+      <div><h2>Vorhandene Dokumente (${c.files.length})</h2>${Object.keys(DIRS).filter((d) => byDir[d]).map((d) => `<div class="card" style="margin-bottom:10px"><b class="small">${DIRS[d]}</b>${byDir[d].map((f) => `<div style="margin-top:4px">${fileLink(f.file, f.title)} ${f.status ? `<span class="st ${cStatus(f.status)}">${esc(f.status)}</span>` : ''} ${f.diagrams ? `<span class="small muted">${f.diagrams} Diagramm${f.diagrams > 1 ? 'e' : ''}</span>` : ''}</div>`).join('')}</div>`).join('') || '<div class="empty">Noch keine Dokumente. Start mit <span class="mono">/konzept</span> bei Jarvis.</div>'}
+        <h2>Vorlagen</h2><div class="card small">${fileLink('docs/konzept/anwendungsfaelle/_vorlage-FA.md', 'Fachlicher Anwendungsfall')} · ${fileLink('docs/konzept/anwendungsfaelle/_vorlage-TU.md', 'Technischer Anwendungsfall')}</div></div>
+    </div>`;
+}
+
+// ---------- Live ----------
+const EVENT_TEXT = {
+  session_start: () => 'Sitzung gestartet', session_end: () => 'Sitzung beendet', prompt: () => 'Nachricht von Sirat', turn_end: () => 'Antwort fertig',
+  agent_start: () => 'beginnt', agent_stop: () => 'ist fertig',
+  delegated: (e) => `beauftragt ${chip(e.to)}${e.note ? ' — ' + esc(e.note) : ''}`,
+  skill: (e) => `lädt Skill <code>${esc(e.skill)}</code>`,
+  file_changed: (e) => `ändert <span class="mono">${esc(e.file)}</span>`,
+  command: (e) => `führt aus: <span class="mono">${esc(e.note || e.cmd)}</span>`,
+  tool_failed: (e) => `⚠ ${esc(e.tool)} fehlgeschlagen${e.file ? ' · ' + esc(e.file) : ''}`,
+  blocked: (e) => `⛔ <b>Hook blockiert:</b> ${esc((e.findings || [])[0] || e.title)}`,
+  warning: (e) => `⚠ <b>Hook meldet:</b> ${esc((e.findings || [])[0] || e.title)}`,
+};
+function renderLive(s) {
+  const ev = s.events, t = ev.today;
+  const quiet = new Set(['turn_end', 'prompt']);
+  let lastDay = '';
+  const rows = ev.recent.filter((e) => !quiet.has(e.event)).slice(0, 160).map((e) => {
+    const day = e.ts.slice(0, 10), head = day !== lastDay ? `<li class="day">${new Date(e.ts).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' })}</li>` : ''; lastDay = day;
+    return head + `<li class="${esc(e.event)}"><span class="mono muted">${time(e.ts)}</span><span>${chip(e.agent)}</span><span>${(EVENT_TEXT[e.event] || (() => esc(e.event)))(e)}</span></li>`;
+  }).join('');
+  $('#tab-live').innerHTML = `
+    <h2>Gerade aktiv</h2>
+    <div class="active">${ev.active.map((a) => `<div class="card" style="border-left-color:${agentColor(a.agent)}"><b>${esc(a.agent)}</b><div class="small muted">${ago(a.since)}${a.lastFile ? '<br>zuletzt: <span class="mono">' + esc(a.lastFile) + '</span>' : ''}</div></div>`).join('') || `<div class="empty" style="flex:1">${ev.jarvisActive ? 'Jarvis arbeitet selbst — kein Fachagent im Einsatz.' : 'Niemand arbeitet gerade.'}</div>`}</div>
+    <h2>Heute</h2>
+    <div class="stats">
+      <div class="card stat"><b>${t.files.length}</b><span>Dateien geändert</span></div>
+      <div class="card stat"><b>${t.agents.reduce((n, [, c]) => n + c, 0)}</b><span>Agenten-Einsätze</span></div>
+      <div class="card stat"><b style="color:${t.blocked ? 'var(--bad)' : 'inherit'}">${t.blocked}</b><span>von Hooks blockiert</span></div>
+      <div class="card stat"><b style="color:${t.warnings ? 'var(--warn)' : 'inherit'}">${t.warnings}</b><span>Hook-Warnungen</span></div>
+      <div class="card stat"><b>${t.failed}</b><span>Werkzeug-Fehler</span></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="card"><b class="small">Wer war im Einsatz</b><div style="margin-top:6px">${t.agents.map(([a, c]) => `${chip(a)} <span class="small muted">×${c}</span> `).join('') || '<span class="small muted">heute noch kein Fachagent</span>'}</div></div>
+      <div class="card"><b class="small">Welche Regeln gegriffen haben</b><div class="small" style="margin-top:6px">${t.blockReasons.map(([r, c]) => `<div>${c}× ${esc(r)}</div>`).join('') || '<span class="muted">keine</span>'}</div></div>
+    </div>
+    <h2>Geänderte Dateien heute</h2>
+    <div class="card small mono">${t.files.map(([f, c]) => `<div>${esc(f)} <span class="muted">×${c}</span></div>`).join('') || '<span class="muted">keine</span>'}</div>
+    <h2>Zeitleiste</h2>
+    ${rows ? `<ul class="timeline card">${rows}</ul>` : '<div class="empty">Noch keine Ereignisse. Das Log füllt sich, sobald du in diesem Ordner mit Jarvis arbeitest.</div>'}
+    <p class="small muted">Protokolliert werden nur Metadaten (wer, welches Werkzeug, welche Datei) — keine Nachrichten, keine Dateiinhalte, nichts aus dem Business Brain. ${ev.total} Ereignisse im Log.</p>`;
+}
+
+// ---------- Team ----------
+const LANES = [['blue', 'Planung'], ['green', 'Tests'], ['yellow', 'Code-Prüfung'], ['red', 'Wächter — Blocker sind nicht verhandelbar'], ['other', 'Spezialisten']];
+function renderTeam(s) {
+  const t = s.team, j = t.agents.find((a) => a.name === (t.mainAgent || 'jarvis'));
+  const activeNames = new Set(s.events.active.map((a) => a.agent));
+  const agentHtml = (a) => `<div class="agent"><span class="n">${chip(a.name)}</span> ${activeNames.has(a.name) ? '<span class="st now">arbeitet</span>' : ''} <span class="small muted mono">${esc(a.model)}</span>
+      <p>${esc(a.description)}</p><div class="small">${a.skills.map((k) => `<code>${esc(k)}</code>`).join(' ')} ${fileLink(a.file, 'öffnen')}</div></div>`;
+  const lane = ([color, label]) => {
+    const members = t.agents.filter((a) => a !== j && (color === 'other' ? !['blue', 'green', 'yellow', 'red'].includes(a.color) : a.color === color));
+    return members.length ? `<div class="card lane" style="border-top-color:${color === 'other' ? 'var(--c-purple)' : cvar(color)}"><h3>${label}</h3>${members.map(agentHtml).join('')}</div>` : '';
+  };
+  const flow = ['Sirat', 'jarvis', 'planner', 'tdd-guide', 'Umsetzung', 'Hooks', 'code-reviewer', 'Wächter', '/verify', 'doc-updater', '/handoff'];
+  $('#tab-team').innerHTML = `<div class="org">
+    ${j ? `<div class="card jarvis"><span class="n" style="font-size:17px;font-weight:700">${chip(j.name)}</span> <span class="small muted mono">${esc(j.model)}</span> <span class="st now">Hauptsitzung</span><p style="margin:6px 0">${esc(j.description)}</p>${fileLink(j.file, 'Anweisung öffnen')}</div>` : ''}
+    <div><h2>Arbeitszyklus — verbindlich, sobald Code entsteht</h2><div class="cycle">${PHASES.map(([n, how, what], i) => `<div class="card"><b>${i + 1} · ${esc(n)}</b><span class="mono" style="color:var(--accent)">${esc(how)}</span><div class="small muted" style="margin-top:4px">${esc(what)}</div></div>`).join('')}</div>
+      <div class="card flow" style="margin-top:10px">${flow.map((f, i) => (i ? '<span class="arrow">→</span>' : '') + (colorOf[f] ? chip(f) : `<span class="chip">${esc(f)}</span>`)).join('')}</div></div>
+    <div><h2>Fachagenten (${t.agents.length - (j ? 1 : 0)})</h2><div class="lanes">${LANES.map(lane).join('')}</div></div>
+    <div class="grid2">
+      <div><h2>Skills (${t.skills.length})</h2><div class="card"><table>${t.skills.map((k) => `<tr><td>${fileLink(k.file, k.name)}</td><td class="small muted">${esc(k.description.split(' — ')[0].slice(0, 140))}</td></tr>`).join('')}</table></div></div>
+      <div><h2>Hooks (${t.hooks.length})</h2><div class="card"><table><tr><th>Wann</th><th>Skript</th><th>Greift bei</th></tr>${t.hooks.map((h) => `<tr><td class="small">${esc(h.event)}</td><td>${fileLink(h.file, h.script)}</td><td class="small muted mono">${esc(h.matcher)}</td></tr>`).join('')}</table></div>
+        <h2>Befehle &amp; Regeln</h2><div class="card small">${t.commands.map((c) => `<div>${fileLink(c.file, c.name)} <span class="muted">— ${esc(c.description)}</span></div>`).join('')}<div style="margin-top:8px">${t.rules.map((r) => fileLink(r.file, 'Regel: ' + r.name)).join(' · ')}</div></div></div>
+    </div></div>`;
+}
+
+// ---------- Betrieb ----------
+function renderOps(s) {
+  const o = s.ops;
+  $('#tab-ops').innerHTML = `
+    ${o.hasCode ? '' : '<div class="empty" style="margin-bottom:18px">Es gibt noch keinen Code — deshalb laufen außer dem Cockpit keine Server. Diese Ansicht füllt sich mit dem Monorepo-Gerüst (Roadmap 0b).</div>'}
+    <div class="grid2">
+      <div><h2>Server auf diesem Rechner</h2><div class="card"><table>${o.services.map((x) => `<tr><td><span class="dot" style="background:${x.up ? 'var(--ok)' : 'var(--c-gray)'}"></span>${esc(x.name)}</td><td class="mono small">:${x.port}</td><td><span class="st ${x.up ? 'ok' : ''}">${x.up ? 'läuft' : 'aus'}</span></td></tr>`).join('')}</table><p class="small muted" style="margin:8px 0 0">Geprüft wird nur, ob der Port antwortet — nicht, wem er gehört. Läuft dort ein anderes Projekt (z. B. auf 3000 oder 5173), erscheint es hier ebenfalls als „läuft".</p></div></div>
+      <div><h2>Git</h2><div class="card"><table><tr><td>Zweig</td><td class="mono">${esc(o.git.branch)}</td></tr><tr><td>Uncommittete Änderungen</td><td>${o.git.changed}</td></tr><tr><td>Letzter Commit</td><td class="small">${esc(o.git.lastCommit)}</td></tr></table></div>
+        <h2>Werkzeuge</h2><div class="card">${o.tooling.map((x) => `<span class="chip" style="margin:2px"><i style="background:${x.installed ? 'var(--ok)' : 'var(--c-gray)'}"></i>${esc(x.name)}</span>`).join('')}<p class="small muted" style="margin:8px 0 0">Grau = noch nicht installiert. Die zugehörigen Hook-Prüfungen laufen so lange still durch.</p></div></div>
+    </div>
+    <p class="small muted" style="margin-top:18px">Repo: <span class="mono">${esc(s.root)}</span></p>`;
+}
+
+// ---------- Rahmen ----------
+function render(s) {
+  state = s; colorOf = Object.fromEntries(s.team.agents.map((a) => [a.name, a.color]));
+  renderBoard(s); renderConcept(s); renderLive(s); renderTeam(s); renderOps(s);
+  $('#pulse-jarvis').innerHTML = `<span class="dot ${s.events.jarvisActive ? 'live' : ''}"></span>${s.events.jarvisActive ? 'Sitzung aktiv' : 'keine Aktivität'}`;
+  $('#pulse-active').innerHTML = s.events.active.map((a) => chip(a.agent)).join(' ');
+  $('#pulse-time').textContent = time(s.generatedAt);
+}
+let lastJson = '';
+async function tick() {
+  try {
+    const r = await fetch('/api/state'); const s = await r.json();
+    const sig = JSON.stringify({ ...s, generatedAt: 0 });
+    if (sig !== lastJson) { lastJson = sig; render(s); } else { $('#pulse-time').textContent = time(s.generatedAt); }
+  } catch { $('#pulse-jarvis').innerHTML = '<span class="dot" style="background:var(--bad)"></span>Cockpit-Server nicht erreichbar'; }
+}
+document.addEventListener('click', async (e) => {
+  const tab = e.target.closest('[data-tab]'), ap = e.target.closest('[data-ap]'), file = e.target.closest('[data-file]');
+  if (tab) { document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', b === tab)); ['board', 'concept', 'live', 'team', 'ops'].forEach((t) => ($('#tab-' + t).hidden = t !== tab.dataset.tab)); try { localStorage.setItem('cockpit-tab', tab.dataset.tab); } catch {} }
+  else if (file) { const r = await fetch('/api/file?path=' + encodeURIComponent(file.dataset.file)); const text = await r.text(); $('#drawer-body').innerHTML = `<p class="small muted mono">${esc(file.dataset.file)}</p>` + (/\.md$/.test(file.dataset.file) ? md(text) : `<pre class="mono" style="white-space:pre-wrap">${esc(text)}</pre>`); $('#drawer').hidden = false; $('#drawer').scrollTop = 0; }
+  else if (ap) openAp(ap.dataset.ap);
+  else if (e.target.id === 'drawer-close') $('#drawer').hidden = true;
+});
+let mermaidReady = null;
+async function drawDiagrams() {
+  if (!document.querySelector('#drawer pre.mermaid:not([data-processed])')) return;
+  try {
+    mermaidReady ||= import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs').then((m) => { m.default.initialize({ startOnLoad: false, securityLevel: 'strict', theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'neutral' }); return m.default; });
+    const mermaid = await mermaidReady;
+    await mermaid.run({ querySelector: '#drawer pre.mermaid:not([data-processed])', suppressErrors: true });
+  } catch { /* offline: der Diagramm-Text bleibt lesbar stehen */ }
+}
+new MutationObserver(drawDiagrams).observe(document.getElementById('drawer-body'), { childList: true });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#drawer').hidden = true; });
+try { const t = localStorage.getItem('cockpit-tab'); if (t) $(`[data-tab="${t}"]`)?.click(); } catch {}
+tick(); setInterval(tick, 3000);
+</script>
+</body>
+</html>

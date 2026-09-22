@@ -1,0 +1,29 @@
+node_modules/
+dist/
+build/
+.astro/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Geheimnisse
+.env
+.env.*
+!.env.example
+
+# Nie ins Repo: Audio, Datenbank-Dumps
+*.wav
+*.mp3
+*.ogg
+*.m4a
+*.dump
+*.sql.gz
+
+# Lokale Einstellungen
+.claude/settings.local.json
+.DS_Store
+Thumbs.db
+
+# Cockpit-Ereignislog (lokal)
+.claude/state/

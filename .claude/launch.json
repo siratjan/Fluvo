@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cockpit",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/cockpit/server.mjs"],
+      "port": 4777,
+      "autoPort": true
+    }
+  ]
+}
