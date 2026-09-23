@@ -54,3 +54,7 @@ Wenn beim Durchgehen der FA-Entwürfe mit Sirat einzelne Entscheidungen fallen o
 **Nachtrag 2026-09-22:** siehe ADR 0010 („Hier essen" fällt aus dem Piloten-Schnitt → drei Bestellarten: Lieferung, Abholung nach Anruf, Mitnehmen ohne Anruf).
 
 **Nachtrag 2026-09-22:** siehe ADR 0012 (Wechselgeld außerhalb des Systems — kein Wechselgeld-Start je Börse, ersetzt Runde 12).
+
+**Nachtrag 2026-09-23:** siehe ADR 0014 (Vorgehen — Durchstich-Spur). Der hier festgehaltene Piloten-Schnitt wird nun als dünner Durchstich zuerst gebaut; das Konzept wächst mit dem Code, statt K2…K11 vorab vollständig abzunehmen.
+
+**Nachtrag 2026-09-23:** siehe ADR 0015 (Zustandskette der Bestellung im Piloten). Die oben als „berührt [FEST] — ausdrücklich NICHT entschieden" markierte Statuskette (Q13) ist damit für den Bestell-Durchstich entschieden: reduzierte Kette `received → delivered | handed_over | cancelled` (`ended_unpaid` [VORSCHLAG]), Merkmale statt Zustände, Storno-Recht am Merkmal „bezahlt". Die Rest-Unterpunkte von Q13 (delivered↔Abgerechnet, „niemand drückt geliefert", Fahrer-Enden, Restaurant-Lebenszyklus) bleiben offen.

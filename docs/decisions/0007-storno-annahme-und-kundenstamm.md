@@ -67,3 +67,5 @@ Wenn der Anwalt zu Q10 anders rät (Einwilligung, Löschfrist, Vorlesen der Adre
 **Nachtrag 2026-09-22:** siehe ADR 0011 (Wechselgeld-Ausgabe muss nicht bestätigt werden — Geldrecht entfällt; Inhaber-Bereich auch vom Handy statt nur am Hauptgerät, „keine Vertretung" bleibt).
 
 **Nachtrag 2026-09-22:** siehe ADR 0012 (Wechselgeld außerhalb des Systems)
+
+**Nachtrag 2026-09-23:** siehe ADR 0016 (Drei Datenklassen a/b/c). Der oben unter „Folgen · K5" genannte Hausjuristen-Vorschlag „drei Datenklassen" (Kundenstamm · Lieferdaten · Fiskaldaten ohne Klarnamen) ist **nicht** das, was jetzt entschieden wurde: ADR 0016 ergänzt die zwei Briefing-Klassen um eine dritte für **personen- und buchungsfreie Betriebsstammdaten** (c) — eine andere Dreiteilung, klar davon abzugrenzen. Der Kundenstamm bleibt Klasse (a); das Einwilligungs-Protokoll bleibt offen (Anwalt A1, Compliance-Blocker B5/B6).

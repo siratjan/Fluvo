@@ -27,6 +27,8 @@ Es gibt heute keinen Ablauf: Der Pilot ist das erste Restaurant, und eine Überw
 4. Der Betreiber erkennt, ob ein Restaurant läuft oder eine Störung hat.
 5. Bei einer Störung ergreift der Betreiber Maßnahmen (z. B. Rufumleitung oder Drucker prüfen) und unterstützt das Restaurant beim Support — **ohne** einzelne Bestellungen zu öffnen (wie genau, siehe Offene Fragen).
 
+> **Nachtrag Runde 51 (2026-09-23, aus dem Kreuzverhör FA-01 — beim Einzeldurchgang von FA-22 zu vertiefen):** Scheitert das **Anlegen einer Bestellung nach der Bestätigung** (FA-01 13a: die KI konnte trotz kurzem Wiederholen nicht speichern), ist der Vorfall **rot** im Monitoring — als technische Störung ohne Bestell- oder Personenbezug (nur Restaurant, Art, Zeitpunkt), per Push angezeigt ([ENTSCHIEDEN Sirat 2026-09-23], Mitschrift Runde 51). Die genaue Einordnung in die Ampel/Werte ist beim Einzeldurchgang von FA-22 zu bestätigen.
+
 ## Ausnahmeabläufe
 
 - **2a. KI nicht erreichbar** (zweigt von Schritt 2 ab): Das System zeigt die KI eines Restaurants als **nicht erreichbar** und benachrichtigt den Betreiber aktiv (Weg offen). Der Betreiber prüft Rufnummer/Rufumleitung/KI-Agent (vgl. FA-20 Schritt 3). Endet in: Störung erkannt, Maßnahme eingeleitet. → Ob diese Störung als dringend gilt: siehe Offene Fragen.
@@ -71,20 +73,20 @@ Es gibt heute keinen Ablauf: Der Pilot ist das erste Restaurant, und eine Überw
 
 | Szenario | Eingabe / Setup | Erwartetes Ergebnis | Darf nicht | Prüfung |
 |---|---|---|---|---|
-| Standardfall gesund | Restaurant „Musterpizza" läuft normal | Übersicht zeigt KI erreichbar, Drucker online, 0 Fehler, verbrauchte Minuten, Anzahl Bestellungen | Anzeige von Bestellinhalt/Kundendaten | manuell + automatisch |
-| KI nicht erreichbar | Rufumleitung/KI-Agent gestört | Übersicht zeigt „KI nicht erreichbar" | Personendaten in der Meldung | automatisch |
-| Aktive Benachrichtigung bei Störung (Push, Pflicht) | Drucker von „Musterpizza" fällt aus | **Push-Meldung in der App** (Anzeige **Pflicht**); Meldung nennt nur Restaurant, Art, Zeitpunkt | Kundendaten/Bestellinhalt in der Benachrichtigung; Störung verschluckt | automatisch |
-| Testbestellung zählt nicht (B20) | Startklar-Prüfung erzeugte eine Testbestellung (FA-20) | „Anzahl Bestellungen" zählt die Testbestellung **nicht**; sie erscheint nicht in den Übersichten | Testbestellung in die Zählung aufnehmen | automatisch |
-| Drucker offline (Grenzfall) | Drucker getrennt | Übersicht zeigt „Drucker offline" | Bestellbezug in der Meldung | manuell am Gerät + automatisch |
-| Betreiber versucht Bestellung zu öffnen | Betreiber ruft zu „Musterpizza" die Detailsicht einer Bestellung mit Kundendaten auf | Zugriff wird verweigert; keine Bestellung, kein Kundendatum sichtbar | Anzeige einer einzelnen Bestellung/Kundendaten | automatisch |
-| Betreiber sieht keine Bestellnummer (Support) | Betreiber sucht zu einem Support-Fall nach einer Bestellnummer eines Restaurants | Keine Bestellnummer wird angezeigt; nur Gesundheitszustand sichtbar, Support über Absprache | Anzeige einer Bestellnummer | automatisch |
-| Ampel rot: Drucker offline in Öffnungszeit | „Musterpizza" ist geöffnet, Drucker fällt aus | Ampel **rot**, Grund „Drucker offline" | Rot außerhalb der Öffnungszeit; Bestellbezug in der Meldung | automatisch |
-| Ampel nicht rot: Drucker offline außerhalb Öffnungszeit (Grenzfall) | Drucker offline, aber Restaurant geschlossen | **Keine rote** Ampel wegen des Druckers (keine dringende Störung außerhalb der Öffnungszeit) | Rote Störungsmeldung außerhalb der Öffnungszeit | automatisch |
-| Ampel gelb: Minutenpaket fast verbraucht (80 %) | Verbrauch erreicht **80 %** des gebuchten Pakets | Ampel **gelb**, Grund „Minutenpaket fast verbraucht" | Gelb schon unter 80 %; KI-Abschaltung als Folge; rote Ampel | automatisch |
-| Ampel gelb: Annahmestopp über eine Stunde | Annahmestopp seit mehr als 60 Minuten aktiv | Ampel **gelb**, Grund „Annahmestopp seit über einer Stunde" | Gelb schon unter einer Stunde | automatisch |
-| Aktualisierung im Minutentakt | Störung tritt auf; Uhr wird hereingereicht | Zustand aktualisiert sich spätestens innerhalb einer Minute; nicht live | Live-Aktualisierung als Anforderung; Störung länger als eine Minute unsichtbar | automatisch |
-| Verbrauchte Minuten sichtbar | Minutenverbrauch > 0 | Übersicht zeigt verbrauchte Minuten je Restaurant | KI-Abschaltung als Folge | automatisch |
-| Zwei-Restaurant-Fall | Betreiber sieht A „Musterpizza" und B „Testdöner"; jemand versucht, über A an Bestellungen von B zu kommen | Nur Gesundheitswerte beider sichtbar; keine Bestellung/Kundendaten von A **oder** B | Übergriff auf Bestellungen/Kundendaten (fremder Tenant) | automatisch |
+| FA-22-T1 · Standardfall gesund | Restaurant „Musterpizza" läuft normal | Übersicht zeigt KI erreichbar, Drucker online, 0 Fehler, verbrauchte Minuten, Anzahl Bestellungen | Anzeige von Bestellinhalt/Kundendaten | manuell + automatisch |
+| FA-22-T2 · KI nicht erreichbar | Rufumleitung/KI-Agent gestört | Übersicht zeigt „KI nicht erreichbar" | Personendaten in der Meldung | automatisch |
+| FA-22-T3 · Aktive Benachrichtigung bei Störung (Push, Pflicht) | Drucker von „Musterpizza" fällt aus | **Push-Meldung in der App** (Anzeige **Pflicht**); Meldung nennt nur Restaurant, Art, Zeitpunkt | Kundendaten/Bestellinhalt in der Benachrichtigung; Störung verschluckt | automatisch |
+| FA-22-T4 · Testbestellung zählt nicht (B20) | Startklar-Prüfung erzeugte eine Testbestellung (FA-20) | „Anzahl Bestellungen" zählt die Testbestellung **nicht**; sie erscheint nicht in den Übersichten | Testbestellung in die Zählung aufnehmen | automatisch |
+| FA-22-T5 · Drucker offline (Grenzfall) | Drucker getrennt | Übersicht zeigt „Drucker offline" | Bestellbezug in der Meldung | manuell am Gerät + automatisch |
+| FA-22-T6 · Betreiber versucht Bestellung zu öffnen | Betreiber ruft zu „Musterpizza" die Detailsicht einer Bestellung mit Kundendaten auf | Zugriff wird verweigert; keine Bestellung, kein Kundendatum sichtbar | Anzeige einer einzelnen Bestellung/Kundendaten | automatisch |
+| FA-22-T7 · Betreiber sieht keine Bestellnummer (Support) | Betreiber sucht zu einem Support-Fall nach einer Bestellnummer eines Restaurants | Keine Bestellnummer wird angezeigt; nur Gesundheitszustand sichtbar, Support über Absprache | Anzeige einer Bestellnummer | automatisch |
+| FA-22-T8 · Ampel rot: Drucker offline in Öffnungszeit | „Musterpizza" ist geöffnet, Drucker fällt aus | Ampel **rot**, Grund „Drucker offline" | Rot außerhalb der Öffnungszeit; Bestellbezug in der Meldung | automatisch |
+| FA-22-T9 · Ampel nicht rot: Drucker offline außerhalb Öffnungszeit (Grenzfall) | Drucker offline, aber Restaurant geschlossen | **Keine rote** Ampel wegen des Druckers (keine dringende Störung außerhalb der Öffnungszeit) | Rote Störungsmeldung außerhalb der Öffnungszeit | automatisch |
+| FA-22-T10 · Ampel gelb: Minutenpaket fast verbraucht (80 %) | Verbrauch erreicht **80 %** des gebuchten Pakets | Ampel **gelb**, Grund „Minutenpaket fast verbraucht" | Gelb schon unter 80 %; KI-Abschaltung als Folge; rote Ampel | automatisch |
+| FA-22-T11 · Ampel gelb: Annahmestopp über eine Stunde | Annahmestopp seit mehr als 60 Minuten aktiv | Ampel **gelb**, Grund „Annahmestopp seit über einer Stunde" | Gelb schon unter einer Stunde | automatisch |
+| FA-22-T12 · Aktualisierung im Minutentakt | Störung tritt auf; Uhr wird hereingereicht | Zustand aktualisiert sich spätestens innerhalb einer Minute; nicht live | Live-Aktualisierung als Anforderung; Störung länger als eine Minute unsichtbar | automatisch |
+| FA-22-T13 · Verbrauchte Minuten sichtbar | Minutenverbrauch > 0 | Übersicht zeigt verbrauchte Minuten je Restaurant | KI-Abschaltung als Folge | automatisch |
+| FA-22-T14 · Zwei-Restaurant-Fall | Betreiber sieht A „Musterpizza" und B „Testdöner"; jemand versucht, über A an Bestellungen von B zu kommen | Nur Gesundheitswerte beider sichtbar; keine Bestellung/Kundendaten von A **oder** B | Übergriff auf Bestellungen/Kundendaten (fremder Tenant) | automatisch |
 
 ## Rückverfolgung
 

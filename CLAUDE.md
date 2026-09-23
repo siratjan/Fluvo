@@ -13,7 +13,7 @@ fluvo ist eine KI-gestützte Bestell- und Betriebsplattform (Cloud-SaaS) für kl
 
 ## Arbeitsmodus
 
-- **Discovery-Phase.** Produktionscode nur, wenn Sirat es für die jeweilige Aufgabe ausdrücklich ansagt. Ohne Ansage: planen, dokumentieren, Fragen klären.
+- **Discovery-Phase, jetzt als Durchstich-Spur (ADR 0014, 2026-09-23):** implementieren zuerst, Konzept fallweise nebenbei — Architekturbild, K5-Ausschnitt und K3 vor dem ersten Kern-Code. Produktionscode nur, wenn Sirat es für die jeweilige Aufgabe ausdrücklich ansagt. Ohne Ansage: planen, dokumentieren, Fragen klären.
 - Aktueller Bauschritt und Status: [docs/roadmap.md](docs/roadmap.md).
 - Ungeklärtes steht in [docs/open-questions.md](docs/open-questions.md). **Nicht raten** — so bauen, dass beide Antworten möglich bleiben, und Sirat fragen.
 - Sprache: Doku und Kommunikation Deutsch, Code und Bezeichner Englisch.
@@ -46,7 +46,7 @@ Sirat redet mit **Jarvis**. Jarvis legt das Arbeitspaket an, wählt das Team und
 | 1 | **Planen** | `/plan` → `planner`, ggf. `architect` | Sirats Freigabe |
 | 2 | **Testen zuerst** | `tdd-guide` | Tests existieren und sind rot |
 | 3 | **Bauen** | Umsetzung im TDD-Ablauf; Hooks prüfen automatisch | Tests grün — nur so viel Code, wie dafür nötig ist |
-| 4 | **Prüfen** | `/review` → `code-reviewer` + Wächter (`tenant-isolation-guard`, `database-reviewer`, `compliance-guard`, `security-reviewer`, `silent-failure-hunter`) — ein zweiter Agent ohne Vorwissen | keine offenen Blocker |
+| 4 | **Prüfen** | `/review` → `code-reviewer` + Wächter (`tenant-isolation-guard`, `database-reviewer`, `compliance-guard`, `security-reviewer`, `silent-failure-hunter`; bei Oberflächen zusätzlich `react-reviewer`, `a11y-architect`; bei Schemas `type-design-analyzer`) — ein zweiter Agent ohne Vorwissen | keine offenen Blocker |
 | 5 | **Verifizieren** | `/verify` — Standards, Sicherheit, Abdeckung | alles grün oder Abweichung von Sirat akzeptiert |
 | 6 | **Sichern** | `/handoff` → `doc-updater` — Stand festhalten, Gelerntes in Doku und Skills | AP `fertig (geprüft)` |
 
@@ -54,9 +54,9 @@ Zurückgehen ist erlaubt (Befund in 4/5 → zurück nach 2 oder 3), vorwärts sp
 
 Befehle: `/plan`, `/review`, `/verify`, `/handoff`, dazu `/durchstich-test`.
 
-### Konzeptphase — vor dem ersten Code
+### Konzept und Code — Durchstich-Spur (ADR 0014)
 
-Erst konzipieren, dann entwickeln (Sirat, 2026-09-18). Die Artefakte K1–K11 stehen in [docs/konzept/README.md](docs/konzept/README.md): Anwendungsfälle, Prozess- und Zustandsmodell, Gesprächsdesign, Datenwörterbuch, Verträge, Anforderungen mit Zahlen, Ausfälle, Rollen, Oberflächen, Pilot-Kriterien. Jarvis erarbeitet sie **im Gespräch mit Sirat** (`/konzept`), `requirements-engineer` entwirft und prüft, die Skills `konzept-*` geben das Format vor, `/council` holt vier unabhängige Stimmen zu offenen Entscheidungen. Nichts erfinden: Was nur Sirat, der Pilot, Anwalt oder Steuerberaterin wissen, wird gefragt. `abgenommen` erst nach Kreuzverhör und Sirats Ja. Keine vertraulichen Zahlen und kein Name des Piloten in den Artefakten.
+Seit 2026-09-23 (ADR 0014, ersetzt „erst konzipieren, dann entwickeln" von 2026-09-18): **implementieren zuerst, Konzept-Artefakte fallweise nebenbei**. Nicht die Landkarte K1–K11 ([docs/konzept/README.md](docs/konzept/README.md)) in fester Reihenfolge abnehmen — je Durchstich-Fall entsteht, was zum Bauen nötig ist (Zustand, Schema, Vertrag, Test). Vor dem ersten Kern-Code stehen aber **Architekturbild, K5-Ausschnitt (Datenmodell) und K3 (Zustandsmodell)** als Entwürfe; die K1-Durchstich-Fälle, K3 und der K5-Ausschnitt werden abgenommen, K2/K8/K9/K10/K11 bleiben dünn und wachsen mit dem Code. **Kern-Qualität von Anfang an voll:** Zustandsmaschine, RLS, unveränderliches Event-Log. Der **Arbeitszyklus** und **„Code nur auf Ansage je AP"** bleiben unverändert. Jarvis erarbeitet die Artefakte **im Gespräch mit Sirat** (`/konzept`), `requirements-engineer` entwirft und prüft, `/council` holt vier unabhängige Stimmen zu offenen Entscheidungen. Nichts erfinden: Was nur Sirat, der Pilot, Anwalt oder Steuerberaterin wissen, wird gefragt. `abgenommen` erst nach Kreuzverhör und Sirats Ja. Keine vertraulichen Zahlen und kein Name des Piloten in den Artefakten.
 
 ## Wo was liegt
 

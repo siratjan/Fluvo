@@ -27,8 +27,8 @@ Es gibt heute keinen Ablauf: Der Pilot ist das erste Restaurant, und es wurde no
 
 - **2a. Restaurant sperren** (zweigt von Schritt 2 ab): Der Betreiber sperrt das Restaurant — Gründe: **Zahlungsrückstand** oder **Vertragsende** ([ENTSCHIEDEN Sirat 2026-09-22], Mitschrift Runde 48). Das gesperrte Restaurant nimmt **keine neuen** Bestellungen an: Die KI **sagt ab**, die **Handannahme ist gesperrt**. Bereits **laufende** Bestellungen werden **zu Ende geführt** (Küche, unterwegs, Abrechnung). Der Inhaber sieht in seinem Profil den Hinweis **„gesperrt, bitte fluvo kontaktieren"**. Endet in: Restaurant gesperrt, keine neuen Bestellungen, laufende abgeschlossen, dokumentiert.
 - **2b. Restaurant entsperren** (zweigt von Schritt 2 ab): Der Betreiber hebt eine Sperre auf; das Restaurant kann wieder Bestellungen annehmen. Endet in: Restaurant entsperrt, dokumentiert.
-- **4a. Minutenkontingent verbraucht** (tritt im Betrieb ein, nicht durch diesen Fall ausgelöst): Ist das gebuchte Minutenpaket aufgebraucht, wird die KI **nie abgeschaltet** ([FEST 21]); die weiteren Minuten laufen als Overage weiter. Endet in: KI bleibt erreichbar, Mehrverbrauch wird erfasst.
 - **3a. Abbuchen eines Moduls mit offenen Vorgängen** (zweigt von Schritt 3 ab): Ein Modul wird abgebucht (wirkt sofort), zu dem es noch laufende Vorgänge gibt (z. B. Fahrermanager mit offener Schicht). Die **offenen Vorgänge werden — analog zur Sperre — zu Ende geführt** (z. B. offene Schicht/Abschluss); das Modul ist **ab dann nur für Neues** weg ([ENTSCHIEDEN Sirat 2026-09-22], Mitschrift Runde 50). Endet in: laufende Vorgänge abgeschlossen, Modul für Neues nicht mehr verfügbar, dokumentiert.
+- **4a. Minutenkontingent verbraucht** (tritt im Betrieb ein, nicht durch diesen Fall ausgelöst): Ist das gebuchte Minutenpaket aufgebraucht, wird die KI **nie abgeschaltet** ([FEST 21]); die weiteren Minuten laufen als Overage weiter. Endet in: KI bleibt erreichbar, Mehrverbrauch wird erfasst.
 
 ## Darf nicht
 
@@ -58,16 +58,16 @@ Es gibt heute keinen Ablauf: Der Pilot ist das erste Restaurant, und es wurde no
 
 | Szenario | Eingabe / Setup | Erwartetes Ergebnis | Darf nicht | Prüfung |
 |---|---|---|---|---|
-| Standardfall Modul dazubuchen (wirkt sofort) | Restaurant „Musterpizza", Fahrermanager wird gebucht | Fahrermanager **sofort** verfügbar, Änderung dokumentiert, Abrechnung tagesgenau | Verzögerung bis Monatswechsel; Änderung an anderem Restaurant | manuell + automatisch |
-| Modul abbuchen (wirkt sofort) | Website-Modul wird abgebucht | Website **sofort** nicht mehr verfügbar, dokumentiert | Stilles Verschwinden ohne Doku; Verzögerung bis Monatswechsel | manuell + automatisch |
-| Modul abbuchen mit offenen Vorgängen (Grenzfall) | Fahrermanager wird abgebucht, während eine **Schicht/ein Abschluss offen** ist | Offener Vorgang wird **zu Ende geführt**; das Modul ist nur für **Neues** nicht mehr verfügbar, dokumentiert | Offenen Vorgang abbrechen; neuen Vorgang trotz Abbuchung starten | automatisch |
-| Minutenkontingent verbraucht (Grenzfall) | Minutenpaket auf 0, weiterer Anruf | KI bleibt erreichbar, Mehrverbrauch als Overage erfasst | KI wird abgeschaltet | automatisch + Testanruf |
-| Restaurant sperren (Zahlungsrückstand) | Restaurant wird gesperrt, neuer Anruf, neue Handannahme | KI sagt ab, Handannahme gesperrt, keine neue Bestellung, Sperre dokumentiert | Neue Bestellung trotz Sperre | manuell + automatisch + Testanruf |
-| Sperre mit laufender Bestellung (Grenzfall) | Bestellung ist „in Küche"/„unterwegs", während gesperrt wird | Laufende Bestellung wird **zu Ende geführt** (bis abgerechnet); nur **neue** werden abgewiesen | Laufende Bestellung abbrechen | automatisch |
-| Inhaber sieht Sperr-Hinweis | Restaurant gesperrt, Inhaber öffnet sein Profil | Inhaber sieht „gesperrt, bitte fluvo kontaktieren" | Inhaber sieht Betreiber-Interna oder kann selbst entsperren | manuell + automatisch |
-| Restaurant entsperren | Gesperrtes Restaurant wird entsperrt | Bestellungen wieder möglich, dokumentiert | — | manuell + automatisch |
-| Inhaber versucht Modul zu schalten | Als Inhaber angemeldet, Modul-/Paketbereich aufrufen | Zugriff verweigert, kein Flag umgelegt | Inhaber legt Flag um | automatisch |
-| Zwei-Restaurant-Fall | Modul bei A „Musterpizza" umgelegt, B „Testdöner" (Rufnummer `+49 30 23125 402`) unverändert prüfen | Nur A geändert; B trägt weiterhin seine eigene Konfiguration | Übergriff auf fremden Tenant | automatisch |
+| FA-21-T1 · Standardfall Modul dazubuchen (wirkt sofort) | Restaurant „Musterpizza", Fahrermanager wird gebucht | Fahrermanager **sofort** verfügbar, Änderung dokumentiert, Abrechnung tagesgenau | Verzögerung bis Monatswechsel; Änderung an anderem Restaurant | manuell + automatisch |
+| FA-21-T2 · Modul abbuchen (wirkt sofort) | Website-Modul wird abgebucht | Website **sofort** nicht mehr verfügbar, dokumentiert | Stilles Verschwinden ohne Doku; Verzögerung bis Monatswechsel | manuell + automatisch |
+| FA-21-T3 · Modul abbuchen mit offenen Vorgängen (Grenzfall) | Fahrermanager wird abgebucht, während eine **Schicht/ein Abschluss offen** ist | Offener Vorgang wird **zu Ende geführt**; das Modul ist nur für **Neues** nicht mehr verfügbar, dokumentiert | Offenen Vorgang abbrechen; neuen Vorgang trotz Abbuchung starten | automatisch |
+| FA-21-T4 · Minutenkontingent verbraucht (Grenzfall) | Minutenpaket auf 0, weiterer Anruf | KI bleibt erreichbar, Mehrverbrauch als Overage erfasst | KI wird abgeschaltet | automatisch + Testanruf |
+| FA-21-T5 · Restaurant sperren (Zahlungsrückstand) | Restaurant wird gesperrt, neuer Anruf, neue Handannahme | KI sagt ab, Handannahme gesperrt, keine neue Bestellung, Sperre dokumentiert | Neue Bestellung trotz Sperre | manuell + automatisch + Testanruf |
+| FA-21-T6 · Sperre mit laufender Bestellung (Grenzfall) | Bestellung ist „in Küche"/„unterwegs", während gesperrt wird | Laufende Bestellung wird **zu Ende geführt** (bis abgerechnet); nur **neue** werden abgewiesen | Laufende Bestellung abbrechen | automatisch |
+| FA-21-T7 · Inhaber sieht Sperr-Hinweis | Restaurant gesperrt, Inhaber öffnet sein Profil | Inhaber sieht „gesperrt, bitte fluvo kontaktieren" | Inhaber sieht Betreiber-Interna oder kann selbst entsperren | manuell + automatisch |
+| FA-21-T8 · Restaurant entsperren | Gesperrtes Restaurant wird entsperrt | Bestellungen wieder möglich, dokumentiert | — | manuell + automatisch |
+| FA-21-T9 · Inhaber versucht Modul zu schalten | Als Inhaber angemeldet, Modul-/Paketbereich aufrufen | Zugriff verweigert, kein Flag umgelegt | Inhaber legt Flag um | automatisch |
+| FA-21-T10 · Zwei-Restaurant-Fall | Modul bei A „Musterpizza" umgelegt, B „Testdöner" (Rufnummer `+49 30 23125 402`) unverändert prüfen | Nur A geändert; B trägt weiterhin seine eigene Konfiguration | Übergriff auf fremden Tenant | automatisch |
 
 ## Rückverfolgung
 

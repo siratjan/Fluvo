@@ -34,14 +34,16 @@ Die folgende **Reihenfolge** ist die **Lesart Jarvis** aus Runde 49 (Sirat hat i
 
 > **Hinweis — bestehende Kasse (Mitschrift Runde 36/37, 2026-09-22):** Beim Onboarding wird **erfasst, ob das Restaurant bereits ein Kassensystem hat**. Der Pilot nutzt eines für den **Tischbetrieb** (Gastraum, „Hier essen"); fluvo läuft im Piloten **daneben** und deckt den Gastraum **nicht** ab. Das **Bargeld von Abholung/Mitnehmen** wird **in fluvo** kassiert (FA-15/FA-16). Dass fluvo neben einer bestehenden TSE-Kasse Barzahlungen erfasst, ist fiskalisch offen → **Q2** (Steuerberaterin). Dies ist ein **Erfassungs-Hinweis**, keine erfundene Verfahrensregel.
 
+> **Nachtrag Runde 51 (2026-09-23, aus dem Kreuzverhör FA-01 — beim Einzeldurchgang von FA-20 zu vertiefen):** Zu den Onboarding-Stammdaten kommen hinzu ([ENTSCHIEDEN Sirat 2026-09-23], Mitschrift Runde 51): **Zahlungsmöglichkeiten bei Lieferung** je Restaurant (nur Bar / Bar und Karte beim Fahrer; die KI sagt sie an, FA-01), die **Schwelle für Großbestellungen** als **Artikelanzahl** (Startwert im Onboarding, änderbar; FA-01 9b) und **optional bekannte Lieferorte** (Liste mit Name, Zone, Fahrer-Hinweis; FA-24). Diese Werte werden in der Onboarding-Liste ergänzt; die Pflege übernimmt danach der Inhaber/die Annahme.
+
 ## Ausnahmeabläufe
 
+- **1a. Steuerdaten/TSE noch nicht geklärt** (zweigt von Schritt 1 ab): Ab wann die TSE im Pilot scharf sein muss, ist offen (Q2, Steuerberaterin vor Pilotstart). Der Betreiber legt das Restaurant an, hält den TSE-Status aber als offen fest, bis die Steuerberaterin bestätigt. Endet in: Restaurant angelegt, TSE-Freigabe ausstehend. → [OFFEN] Q2.
 - **3a. Rufumleitung liefert die Anrufernummer nicht** (zweigt von Schritt 3 ab): Beim Testanruf zeigt sich, dass statt der Nummer des Anrufers die Nummer des Restaurants ankommt → die Stammkunden-Erkennung greift nicht (Q1). Der Betreiber dokumentiert das; das Restaurant kann trotzdem startklar werden, die Stammkunden-Erkennung bleibt aber eingeschränkt. Endet in: startklar mit dokumentierter Einschränkung. → [OFFEN] Q1.
 - **4a. Drucker koppelt nicht / Testbon bleibt aus** (zweigt von Schritt 4 oder 11 ab): Der Betreiber prüft die Drucker-Kopplung erneut. Solange kein Testbon gedruckt wird, wird das Restaurant **nicht** startklar. Endet in: Restaurant bleibt in Einrichtung, offener Punkt beim Betreiber. → [OFFEN] Q8.
-- **10b. AVV oder Datenschutzhinweis fehlt** (zweigt von Schritt 10 ab): Ist der AVV nicht abgeschlossen oder fehlt der Datenschutzhinweis mit dem Abschnitt „Telefonische Bestellung", wird das Restaurant **nicht** startklar — **[VORSCHLAG]**, vorbehaltlich Anwalt (Q10). Endet in: Restaurant bleibt in Einrichtung, offener rechtlicher Punkt.
 - **7a. KI-Freigabe der Speisekarte ist unvollständig oder falsch** (zweigt von Schritt 7 ab): Der Betreiber korrigiert die aus Foto/PDF erkannten Artikel vor der Freigabe von Hand. Ohne manuelle Freigabe geht keine Karte scharf (Briefing §3). Endet in: freigegebene Speisekarte oder Abbruch der Freigabe.
+- **10b. AVV oder Datenschutzhinweis fehlt** (zweigt von Schritt 10 ab): Ist der AVV nicht abgeschlossen oder fehlt der Datenschutzhinweis mit dem Abschnitt „Telefonische Bestellung", wird das Restaurant **nicht** startklar — **[VORSCHLAG]**, vorbehaltlich Anwalt (Q10). Endet in: Restaurant bleibt in Einrichtung, offener rechtlicher Punkt.
 - **11a. Testanruf misslingt** (zweigt von Schritt 11 ab): Die KI meldet sich nicht oder nimmt keine Testbestellung an. Der Betreiber prüft Rufnummer/Rufumleitung/KI-Agent (Schritt 3) erneut. Das Restaurant wird **nicht** startklar. Endet in: Restaurant bleibt in Einrichtung.
-- **1a. Steuerdaten/TSE noch nicht geklärt** (zweigt von Schritt 1 ab): Ab wann die TSE im Pilot scharf sein muss, ist offen (Q2, Steuerberaterin vor Pilotstart). Der Betreiber legt das Restaurant an, hält den TSE-Status aber als offen fest, bis die Steuerberaterin bestätigt. Endet in: Restaurant angelegt, TSE-Freigabe ausstehend. → [OFFEN] Q2.
 
 ## Darf nicht
 
@@ -80,14 +82,14 @@ Die folgende **Reihenfolge** ist die **Lesart Jarvis** aus Runde 49 (Sirat hat i
 
 | Szenario | Eingabe / Setup | Erwartetes Ergebnis | Darf nicht | Prüfung |
 |---|---|---|---|---|
-| Standardfall vollständiges Onboarding | Alle Onboarding-Daten für Test-Restaurant „Musterpizza" (Rufnummer `+49 30 23125 401`), alle Schritte 1–11 durchlaufen | Restaurant angelegt und **startklar**, Testanruf + Testbon bestanden, Inhaber hat Zugang | Startklar ohne bestandene Prüfung | manuell + Testanruf |
-| Speisekarte per Foto ohne Freigabe | Karte per PDF eingespielt, Freigabe **nicht** erteilt | Karte bleibt unscharf, Restaurant nicht startklar | Karte scharf ohne Freigabe | manuell + automatisch |
-| Falsch erkannter Allergen-/Steuerwert (Grenzfall) | KI erkennt Steuersatz/Allergen falsch, Betreiber korrigiert vor Freigabe | Freigabe erst nach Korrektur, korrigierte Werte scharf | Ungeprüfte Übernahme | manuell + automatisch |
-| Testanruf misslingt | KI meldet sich nicht (Rufumleitung falsch) | Restaurant bleibt in Einrichtung, offener Punkt beim Betreiber | Startklar trotz fehlgeschlagenem Testanruf | Testanruf |
-| Testbon bleibt aus | Drucker nicht gekoppelt | Restaurant bleibt in Einrichtung | Startklar ohne Testbon | manuell am Gerät |
-| Testbestellung wird ausgeblendet (B20) | Startklar-Prüfung erzeugt eine Testbestellung (Testanruf/Testbon) | Testbestellung als **Test markiert**; erscheint **nicht** in Zählungen (FA-22 „Anzahl Bestellungen"), Übersichten und Kasse | Testbestellung als echte Bestellung zählen/anzeigen | manuell + automatisch |
-| Übergabe an Inhaber | Restaurant startklar, Inhaber-Zugang erteilt | Inhaber kann Preise/Öffnungszeiten/Liefergebiet selbst ändern; kann Module/Rufnummer/Steuerdaten **nicht** ändern | Inhaber schaltet Module/Rufnummer | manuell + automatisch |
-| Zwei-Restaurant-Fall | Restaurant A „Musterpizza" und B „Testdöner" (Rufnummer `+49 30 23125 402`) parallel im Onboarding | Jedes Restaurant nur mit eigenen Daten; A sieht nichts von B und umgekehrt | Übergriff auf fremden Tenant | automatisch |
+| FA-20-T1 · Standardfall vollständiges Onboarding | Alle Onboarding-Daten für Test-Restaurant „Musterpizza" (Rufnummer `+49 30 23125 401`), alle Schritte 1–11 durchlaufen | Restaurant angelegt und **startklar**, Testanruf + Testbon bestanden, Inhaber hat Zugang | Startklar ohne bestandene Prüfung | manuell + Testanruf |
+| FA-20-T2 · Speisekarte per Foto ohne Freigabe | Karte per PDF eingespielt, Freigabe **nicht** erteilt | Karte bleibt unscharf, Restaurant nicht startklar | Karte scharf ohne Freigabe | manuell + automatisch |
+| FA-20-T3 · Falsch erkannter Allergen-/Steuerwert (Grenzfall) | KI erkennt Steuersatz/Allergen falsch, Betreiber korrigiert vor Freigabe | Freigabe erst nach Korrektur, korrigierte Werte scharf | Ungeprüfte Übernahme | manuell + automatisch |
+| FA-20-T4 · Testanruf misslingt | KI meldet sich nicht (Rufumleitung falsch) | Restaurant bleibt in Einrichtung, offener Punkt beim Betreiber | Startklar trotz fehlgeschlagenem Testanruf | Testanruf |
+| FA-20-T5 · Testbon bleibt aus | Drucker nicht gekoppelt | Restaurant bleibt in Einrichtung | Startklar ohne Testbon | manuell am Gerät |
+| FA-20-T6 · Testbestellung wird ausgeblendet (B20) | Startklar-Prüfung erzeugt eine Testbestellung (Testanruf/Testbon) | Testbestellung als **Test markiert**; erscheint **nicht** in Zählungen (FA-22 „Anzahl Bestellungen"), Übersichten und Kasse | Testbestellung als echte Bestellung zählen/anzeigen | manuell + automatisch |
+| FA-20-T7 · Übergabe an Inhaber | Restaurant startklar, Inhaber-Zugang erteilt | Inhaber kann Preise/Öffnungszeiten/Liefergebiet selbst ändern; kann Module/Rufnummer/Steuerdaten **nicht** ändern | Inhaber schaltet Module/Rufnummer | manuell + automatisch |
+| FA-20-T8 · Zwei-Restaurant-Fall | Restaurant A „Musterpizza" und B „Testdöner" (Rufnummer `+49 30 23125 402`) parallel im Onboarding | Jedes Restaurant nur mit eigenen Daten; A sieht nichts von B und umgekehrt | Übergriff auf fremden Tenant | automatisch |
 
 ## Rückverfolgung
 

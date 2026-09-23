@@ -1,6 +1,6 @@
 # Offene Fragen [OFFEN]
 
-Stand: 2026-09-22 · Gepflegt vom Agenten `doc-updater`.
+Stand: 2026-09-23 · Gepflegt vom Agenten `doc-updater`.
 
 Regel: **Nicht raten.** So bauen, dass beide Antworten möglich bleiben, und Sirat fragen. Beantwortete Fragen bekommen ein ✅ in der Überschrift, das Datum und einen Verweis auf das ADR — sie werden nicht gelöscht.
 
@@ -28,6 +28,8 @@ Die Fragen Q1–Q8 stammen aus der Analyse des Briefings vom 2026-09-18 und sind
 **Ergänzung 2026-09-22 (K1, Runde 46 — Internetausfall):** An Tagen mit Internetausfall nimmt das Personal Bestellungen **auf Papier** an und kassiert das Bargeld auf Papier; diese Umsätze werden **nicht** in fluvo nachgetragen ([ENTSCHIEDEN Sirat 2026-09-22, Variante B], FA-14). Damit entstehen an Ausfalltagen **Barumsätze auf Papier neben fluvo**, die weder in fluvo noch (mangels Netz) in der Cloud-TSE erfasst sind. Für die Steuerberaterin: Wie sind solche Bar-Aufzeichnungen auf Papier fiskalisch zu behandeln, und was muss über den Ausfallzeitraum dokumentiert werden?
 
 **Prüfpunkt 2026-09-22 (K1, Runde 49 — ADR 0012, Wechselgeld außerhalb des Systems):** fluvo führt **keinen Wechselgeld-Anfangsbestand** der Kasse/Börse — kein Wechselgeld-Start, keine Einstellung je Restaurant, kein Anteil im Abschluss; der Abschluss je Mitarbeiter zeigt nur die bar kassierten Beträge. Für die Steuerberaterin: **Braucht das Kassenbuch einen Anfangsbestand** (Wechselgeld)? Reicht es, dass fluvo den Anfangsbestand nicht führt, oder muss er außerhalb von fluvo dokumentiert werden? Nur Prüfpunkt, nicht hier entscheiden (ADR 0012).
+
+**Ergänzung 2026-09-23 (K5-Gegenlesen):** Aus dem Datenmodell kommen drei fertig formulierte Steuerberaterin-Fragen hinzu — **S1** (Brutto-Führung des eingefrorenen Positionspreises + `tax_cents` je Position, DSFinV-K-Pflichtangaben nach Löschung der Personendaten), **S2** (darf eine als Test markierte Bestellung `orders.is_test` an die TSE?), **S3** (sind die Freitextfelder des Tresen-Abschlusses `comment`/`discrepancy_reason` fiskalisch aufbewahrungspflichtig und personenbezugsfrei zu halten?). Wortlaut siehe `docs/konzept/vertraege/datenwoerterbuch.md`, Abschnitt „Fragen zur Weiterleitung".
 
 **Wer:** Steuerberaterin, **vor Pilotstart**. Sirat leitet weiter.
 
@@ -73,8 +75,9 @@ Die Fragen Q1–Q8 stammen aus der Analyse des Briefings vom 2026-09-18 und sind
 ### Q10 · Löschfristen
 **Warum wichtig:** Das Löschkonzept braucht konkrete Fristen für Kundenstamm, Lieferadresse an der Bestellung und `voice_calls`.
 **Ergänzung 2026-09-21 (K1, ADR 0007):** Sirat hat entschieden, dass je Restaurant ein Kundeneintrag (Rufnummer, Name, Adresse) gespeichert wird — vorbehaltlich Anwalt: (1) **Einwilligungsfrage** der KI bei der Erstbestellung („Soll ich mir Ihre Adresse merken?"), auch bei Handannahme; Nachweis als Protokolleintrag ohne Audio. (2) Löschfrist vorerst **12 Monate** nach der letzten Bestellung. (3) Bei der Wiedererkennung nennt die KI die **volle Adresse** zur Bestätigung — der Hausjurist (Recherche, keine Rechtsberatung) hält das für zu offen und empfiehlt Namensabgleich + Straße ohne Hausnummer. Vom Anwalt zu bestätigen: Rechtsgrundlage und Wortlaut der Frage, Frist, Zulässigkeit des Vorlesens, AVV-Formulierung (fluvo bleibt Auftragsverarbeiter), DSFA-/DSB-Pflicht des Restaurants, Identifizierung bei Auskunft/Löschung per Rufnummer. Der ausformulierte Fragenkatalog liegt im Business Brain (dort Q8.1–Q8.9, Q14–Q16).
-**Beide Wege offen halten:** Umfang der vorgelesenen Adresse, Modus (Frage / Hinweis) und Löschfrist als Einstellung je Restaurant bauen, nicht fest verdrahten. Vorschlag „drei Datenklassen" (Kundenstamm · Lieferdaten · Fiskaldaten ohne Klarnamen) berührt Briefing §5.2 → `architect` + Steuerberaterin (Q2), nicht entschieden.
-**Wer:** Anwalt.
+**Beide Wege offen halten:** Umfang der vorgelesenen Adresse, Modus (Frage / Hinweis) und Löschfrist als Einstellung je Restaurant bauen, nicht fest verdrahten.
+**Datenklassen entschieden (Sirat, 2026-09-23, Runde 52 — ADR 0016 (drei Datenklassen)):** Die dritte Klasse (c) „betrieblich" ist beschlossen: (a) DSGVO-löschbar · (b) GoBD 10 Jahre · (c) betriebliche Stammdaten ohne Personenbezug/Buchungscharakter (Speisekarte, Zonen, Öffnungszeiten, Geräte). Beschäftigtendaten sind nicht (c) und nicht der Kundenlöschung unterworfen (eigene Frist → A5); Löschjobs tabellen-scharf. Abweichung von Briefing §5.2 — Briefing-Änderung nur auf Ansage. Skill `fluvo-compliance` nachgezogen. **Offen bleiben nur die konkreten Fristen/Rechtsfragen an den Anwalt A1–A6** (Wortlaut siehe `docs/konzept/vertraege/datenwoerterbuch.md`, Abschnitt „Fragen zur Weiterleitung").
+**Wer:** Anwalt (Fristen A1–A6).
 
 ### Q11 · Login-Details für Küche und Fahrer
 **Warum wichtig:** PIN bzw. QR-Token sind gesetzt; offen sind Gerätebindung, Sperre nach Fehlversuchen, Gültigkeit des QR-Tokens (Vorschlag: bis „Geliefert", an Schicht gebunden, statt echtem Einmal-Token — sonst scheitert der zweite Scan nach App-Neustart).
@@ -89,7 +92,7 @@ Das Briefing liegt als Arbeitskopie in `docs/briefing.md`; das Original im Busin
 
 Die Fragen Q13–Q18 stammen aus der Konzeptarbeit K1 (AP-003) vom 2026-09-18; Quelle ist die Mitschrift `docs/konzept/anwendungsfaelle/_gespraechsnotizen-K1.md`.
 
-### Q13 · Statuskette und Bestellarten
+### Q13 · Statuskette und Bestellarten ✅ beantwortet (Sirat, 2026-09-23, ADR 0015 — für den Bestell-Durchstich)
 **Warum wichtig:** Die feste Statuskette `… Fertig → Unterwegs → Geliefert → Abgerechnet` [FEST 2] ist auf Lieferung zugeschnitten. K1 hat vier Bestellarten bestätigt (Lieferung, Abholung nach Anruf, Mitnehmen ohne Anruf, Hier essen) und im Piloten keine Küchen-Status. Damit passt die Kette nicht mehr überall und muss überarbeitet werden. **Berührt [FEST 2]** → in K3 durch `architect` vorbereiten, Sirat entscheidet. Nichts davon ist entschieden.
 Zu klären als **eine** Frage mit Unterpunkten:
 - (a) Ein Weg **ohne** „Unterwegs" für Abholung, Mitnehmen und Hier essen.
@@ -100,7 +103,9 @@ Zu klären als **eine** Frage mit Unterpunkten:
 - (f) Lebenszyklus des Restaurants selbst: in Einrichtung → startklar ↔ gesperrt (Runden 1, 10).
 - (g) Zustand/Merkmal **„quittiert"** (ADR 0010): eine KI-Bestellung ist bis zur Quittierung „neu/unquittiert", der Bon-Druck wird erst durch die Quittierung ausgelöst (2-Minuten-Notdruck sonst) — K3 hält fest, ob eigener Zustand oder Merkmal.
 **Ergänzung 2026-09-21 (ADR 0008):** Für den **ersten Piloten** ist die Liefer-Bestellung jetzt schärfer umrissen und muss in die Kette eingepasst werden: (a) **kein „Unterwegs"** — der Fahrer-Teil kommt später, es gibt keinen Fahrer-Scan; (b) das **Ende setzt die Annahme durch „geliefert"** (Runde 26, entschieden), sobald sie weiß, dass geliefert wurde — nicht automatisch beim Bon-Druck; dabei wird **keine Zahlart und kein Bar-Eingang** erfasst; (c) offen ist das **Verhältnis zu „Abgerechnet"** (gibt es das für eine Lieferung ohne erfasste Zahlung noch?) und (d) der Fall, dass **niemand „geliefert" drückt** (die Bestellung bliebe offen). Das **Wieder-Lösen des Fahrer-Scans** aus (c) der ursprünglichen Liste ist mit FA-08 **zurückgestellt** (ADR 0008), bleibt aber für die spätere Fahrer-App vorgemerkt. **Storno-Pfad** (ergänzt Q3): vor Zahlung die Annahme, nach Zahlung der Inhaber, immer mit Grund (ADR 0007).
-**Wer:** Sirat entscheidet nach Vorbereitung durch `architect` (K3).
+**Ergänzung 2026-09-23 (ADR 0014, Durchstich-Spur):** Ein **K3-Entwurf liegt vor** (`docs/konzept/modelle/zustand-bestellung.md`, requirements-engineer, Übergangstabelle als eine Seite). `architect` liest ihn gegen [FEST 2] gegen; der Durchgang mit Sirat steht aus. Die offenen Unterpunkte (a)–(g) sind darin als Vorschlag beantwortet, aber **nicht entschieden** — die Abnahme des K3-Durchstich-Ausschnitts erfolgt erst nach Kreuzverhör und Sirats Ja.
+**Antwort (Sirat, 2026-09-23, Runde 52 — ADR 0015 (Zustandskette im Piloten)):** Reduzierte Kette für den Piloten bestätigt: `received` → `delivered` | `handed_over` | `cancelled` (Storno-Pfad), `ended_unpaid` bleibt [VORSCHLAG] bis Q3. Quittierung, Vorbestellung, Test und Zahlung sind **Merkmale**, keine Zustände (klärt (a) ohne „Unterwegs", (b) „In Küche"/„Fertig" nicht von Hand → bleibt `received`, (g) „quittiert" als Merkmal, (e) Storno-Recht am Merkmal „bezahlt", (d) „nie abgeholt" → `ended_unpaid`). Küchen-/Fahrer-Zustände (`in_kitchen`, `ready`, `out_for_delivery`, `settled`) werden später **zwischen** `received` und `delivered` eingeschoben; Status als erweiterbare Literal-Union, kein DB-Enum. Abweichung von Briefing §5.3 — Briefing-Änderung nur auf Sirats Ansage. Skill `fluvo-core-domain` nachgezogen. **Rest-Unterpunkte nicht mitgeschlossen** → Q27–Q30. Die fiskalischen Storno-Grenzen bleiben Q3 (Steuerberaterin).
+**Wer:** Sirat entscheidet nach Vorbereitung durch `architect` (K3). Erledigt für den Bestell-Durchstich.
 
 ### Q14 · Zahlart Gutschein (Papier-Gutschein des Restaurants)
 **Warum wichtig:** Das Briefing kennt als Zahlarten Bar/Karte/Storno; der Papier-Gutschein des Restaurants fehlt dort. In K1 bestätigt: Gutschein ist eine kleine Zahlart beim Kassieren, und eine Bestellung kann **zwei** Zahlarten haben (Gutscheinbetrag + Rest bar, Runde 8). In den Kassensturz des Fahrers geht nur der bar kassierte Teil ein; den Gutschein gibt der Fahrer ab. Offen: fiskalische Behandlung des Gutscheins und ob eine Nummer/Entwertung nötig ist oder „Gutschein über X €" reicht.
@@ -181,3 +186,43 @@ Die Fragen Q22–Q24 stammen aus der Einzeldurchsicht von FA-05 (K1, Runde 38 vo
 **Warum wichtig:** Bei der Handannahme muss die Einwilligung „Kunde nach dem Merken der Adresse gefragt?" festgehalten werden (Q10, ADR 0007). Offen (Runde 38): **streng** (ohne Antwort kein Anlegen) oder **Standard „Nein"**, nur bei „Ja" antippen?
 **Antwort (Sirat, 2026-09-22, Runde 39):** Es bleibt bei **Weg B**: Der Mitarbeiter **fragt den Kunden immer** und merkt die Adresse **nur bei „Ja"** (kein pauschales Merken). FA-05 bleibt wie entworfen, ADR 0007 unverändert; ob die Pflichtangabe streng ist, wurde nicht eigens entschieden (Lesart Jarvis: streng wie im Entwurf). Rechtsgrundlage weiter über den Anwalt (Q10).
 **Wer:** Sirat.
+
+---
+
+Die Fragen Q25–Q26 stammen aus dem Kreuzverhör von FA-01 (K1, Runde 51 vom 2026-09-23); Quelle ist die Mitschrift `docs/konzept/anwendungsfaelle/_gespraechsnotizen-K1.md`.
+
+### Q25 · Pilot-Fakten für den Vor-Ort-Termin 2026-09-25 (keine Entscheidungen)
+**Warum wichtig:** Aus dem Kreuzverhör FA-01 sind zwei Angaben offen, die **nur der Pilot** kennt und die als **Fakten** vor dem Pilotstart zu erfassen sind — sie ändern keine Entscheidung, aber sie füllen Stammdaten und Testanrufe:
+- **(a) Nimmt der Fahrer des Piloten Karte an?** Die Zahlungsmöglichkeit bei Lieferung ist ein Stammdatum je Restaurant (nur Bar / Bar und Karte beim Fahrer; Online später), das die KI in der Zusammenfassung ansagt (Runde 51, entschieden). Eine Zahlart je Bestellung erfasst der erste Pilot nicht (ADR 0008), das Feld ist im Datenmodell vorgesehen (K5).
+- **(b) Welche Sprachen rufen tatsächlich an?** Die KI spricht im Piloten Deutsch und Englisch (Runde 51, entschieden); weitere Sprachen sind je Restaurant später freischaltbar. Welche Sprachen beim Piloten real vorkommen, bestimmt die Testanrufe (K4) und ob eine dritte Sprache früh nötig wird.
+**Beide Wege offen halten:** Zahlungsmöglichkeit und Sprachen als Stammdaten je Restaurant bauen, nicht fest verdrahten.
+**Wer:** Sirat, beim Termin beim Piloten am **2026-09-25** erfassen.
+
+### Q26 · Optionen-/Varianten-Modell: Extra-Aufpreis je Größe/Variante
+**Warum wichtig:** Extra-Zutaten sind bepreiste Optionen, deren **Aufpreis von der Größe/Variante** des Artikels abhängt (Sirat, Runde 51, entschieden — Beispiel: kleine Pizza, Extra Zwiebel = 50 Cent). Der Server rechnet den Aufpreis, die KI nennt ihn. Offen ist das **Datenmodell dahinter**: Wird der Aufpreis je (Option × Variante) als Matrix gepflegt, je Option mit Variantenfaktor, oder je Größenklasse — und wie viel Pflegeaufwand entsteht dem Inhaber. Das berührt FA-12 (Speisekarte), K5 (Datenmodell Option/Variante) und die Function-Call-Argumente in K4.
+**Beide Wege offen halten:** Option und Variante als eigene Datenformen im Schema; der Aufpreis hängt an der Kombination, nicht am Artikel allein.
+**Wer:** `architect`/`database-reviewer` bereiten das Modell in K5 vor; wie der Pilot Extras bepreist, ist ein Pilot-Fakt (mit Q25 beim Termin erfragen). Sirat bestätigt das Modell.
+
+---
+
+Die Fragen Q27–Q30 sind die vier bei der Q13-Entscheidung (Runde 52, ADR 0015) **ausdrücklich nicht mitgeschlossenen** Rest-Unterpunkte aus dem K3-Zustandsmodell (`docs/konzept/modelle/zustand-bestellung.md`, Gegenlesen `_gegenlesen-K3.md`). Sie werden getrennt weitergeführt, damit Q13 nicht fälschlich als vollständig erledigt gilt.
+
+### Q27 · Verhältnis `delivered` ↔ „Abgerechnet" für Lieferungen ohne erfasste Zahlung
+**Warum wichtig:** Im Piloten erfasst fluvo bei einer Lieferung keine Zahlart und keinen Bar-Eingang (ADR 0008); das Tür-Bargeld läuft auf Papier. Offen: Ist `delivered` das **Ende** der Bestellung, oder folgt für eine Lieferung noch ein „Abgerechnet" (der spätere `settled`-Zustand), obwohl im System nie eine Zahlung steht?
+**Beide Wege offen halten:** `delivered` als terminal führen (`TERMINAL_STATES`), aber `settled` als später einschiebbaren Zustand vorsehen (Status als erweiterbare Literal-Union, kein DB-Enum).
+**Wer:** Sirat, mit dem Fahrer-Teil bzw. der Abrechnung (nach dem ersten Piloten); fiskalisch → Steuerberaterin (Q2).
+
+### Q28 · „Niemand drückt geliefert" — sichtbarer Abschlussweg am Tagesende
+**Warum wichtig:** Eine Liefer-Bestellung, bei der niemand „geliefert" auslöst, bliebe für immer in `received` — es entstehen Halden offener Bestellungen. Der Pilot braucht einen **sichtbaren Abschlussweg am Tagesende** (nicht still schließen).
+**Beide Wege offen halten:** Monitoring/Listen über die abgeleitete Menge `OPEN_STATES`, nicht über `status = 'received'` verdrahten; einen bewussten Endübergang am Tagesende vorsehen, ohne ihn jetzt zu automatisieren.
+**Wer:** Sirat (Ablauf am Tagesende), ausarbeiten in K3/K10.
+
+### Q29 · Fahrer-Enden (Scan lösen, „nicht zustellbar", Bargeld-Kassensturz)
+**Warum wichtig:** Die Fahrer-bezogenen Endübergänge und das Wieder-Lösen des Fahrer-Scans sind mit dem Fahrer-Teil **zurückgestellt** (ADR 0008) und gehören nicht in das Piloten-Zustandsmodell. Vorgemerkt für die spätere Fahrer-App (FA-08/09/10).
+**Beide Wege offen halten:** Kern-Befehle kanalneutral; `orders.driver_id`/`payment_method` sind vorbereitet und bleiben im Piloten leer.
+**Wer:** Sirat/`architect`, **wenn die Arbeit an der Fahrer-App beginnt** — nicht vor dem ersten Piloten.
+
+### Q30 · Lebenszyklus des Restaurants (in Einrichtung → startklar ↔ gesperrt)
+**Warum wichtig:** `tenants.status` (in Einrichtung / startklar / gesperrt) ist ein eigenes Zustandsmodell, **nicht** das der Bestellung — es gehört zu **K9 / FA-20 / FA-21**, nicht in das Bestell-Zustandsmodell K3. Im Datenwörterbuch ist `tenants.status` als Platzhalter geführt.
+**Beide Wege offen halten:** Status als erweiterbare Literal-Union je Objekt; nicht mit dem Bestellstatus vermengen.
+**Wer:** Sirat, ausarbeiten in K9 (Rollen/Rechte, FA-20/FA-21).

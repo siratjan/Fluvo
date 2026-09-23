@@ -28,6 +28,8 @@
 7. **Ausnahme vom Mindestbestellwert** — will ein Anrufer unter dem Mindestbestellwert der Zone beliefert werden (FA-01, Ausnahme 9a), sagt die KI das **nicht selbst** zu, sondern verbindet an die Annahme; **die Annahme entscheidet** über die Ausnahme ([ENTSCHIEDEN Sirat 2026-09-22], Mitschrift Runde 28 B14).
 8. **Ausnahme vom Liefergebiet** — will ein Anrufer an eine Adresse **außerhalb des Liefergebiets** beliefert werden (FA-01, Ausnahme 7a), sagt die KI das **nicht selbst** zu, sondern verbindet an die Annahme; **die Annahme entscheidet** über die Ausnahme (Muster wie beim Mindestbestellwert) ([ENTSCHIEDEN Sirat 2026-09-22], Mitschrift Runde 33).
 
+> **Nachtrag Runde 51 (Hinweis — FA-03 ist noch nicht mit Sirat durchgegangen):** Aus dem Kreuzverhör von FA-01 kommen **vier weitere Eskalationsgründe** hinzu, die beim Durchgehen von FA-03 einzuarbeiten sind: **9. Adresse nicht auflösbar** (Geocoder findet die Adresse nach zweitem Anlauf nicht, kein bekannter Lieferort — FA-01 7b / FA-24); **10. Großbestellung über der Schwelle** (Sofort-Bestellung über der Artikelanzahl-Schwelle; niemand erreichbar → „Rückruf nötig", kein Bon bis ein Mensch bestätigt — FA-01 9b); **11. Technischer Fehler** (Anlegen scheitert nach der Bestätigung; ehrliche Absage, **kein Rückruf-Versprechen** — FA-01 13a); **12. Sprache** (Anrufer spricht weder Deutsch noch Englisch, nach zweitem Missverständnis — FA-01 2b) ([ENTSCHIEDEN Sirat 2026-09-23], Mitschrift Runde 51).
+
 ## Normalablauf (Variante A — Rückruf-Ticket) `[VORSCHLAG]`
 
 > Empfehlung für den MVP laut open-questions Q4 („im MVP vermutlich Rückruf-Ticket"). Mit Sirat/Piloten zu bestätigen.

@@ -58,6 +58,8 @@ create policy tenant_isolation on orders
 
 Nie aus einem ungeprüften Feld im Request-Body.
 
+**Tenant-agnostischer Lookup vor gesetztem Tenant:** Manche Schlüssel müssen den Tenant erst *ableiten* — `devices.token_hash` (CloudPRNT), `voice_calls.provider_call_id` und die Zuordnung `voice_agents` (Voice-Webhook). Diese Schlüssel sind **global eindeutig** (Ausnahme zur „Eindeutigkeit je Tenant"-Regel), und der Lese-Pfad ist eine **klar benannte, tenant-agnostische Funktion**, die Token/Anbieter-ID → Tenant auflöst und dann `withTenant` betritt — **kein `BYPASSRLS`**.
+
 ## Tabellenentwurf
 
 - `tenant_id uuid not null references tenants(id)` auf jeder Tabelle.

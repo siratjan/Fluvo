@@ -125,11 +125,11 @@ Regeln dazu:
 - **Commit** frühestens nach Phase 5 und nur auf Sirats Ansage.
 - **Pakete ohne Code** (Recherche, Entscheidungsvorlage, Test am Gerät) laufen verkürzt: Planen → Erarbeiten → Prüfen (Gegenlesen durch `architect` oder den passenden Wächter) → Sichern. `Phase` steht dann auf `—`, die Freigabe in Phase 1 und das Sichern am Ende gelten trotzdem.
 
-## 4b. Die Konzeptphase — vor dem ersten Code
+## 4b. Konzept und Code — Durchstich-Spur (ADR 0014)
 
-Sirat will die Idee erst konzipieren, dann entwickeln (2026-09-18). Bis die Artefakte für den Piloten-Durchstich abgenommen sind, ist Konzeptarbeit die Hauptarbeit; Code entsteht nur für Wegwerf-Tests und nur auf Ansage.
+**Ansatz seit 2026-09-23 (ADR 0014): implementieren zuerst, Konzept fallweise.** Er ersetzt „erst konzipieren, dann entwickeln" (2026-09-18): statt K1–K11 in fester Reihenfolge abzunehmen, wird der Piloten-Durchstich als **eine Spur** aus Konzept und Code gebaut — je Durchstich-Fall entsteht, was zum Bauen nötig ist (Zustand, Schema, Vertrag, Test). Vor dem ersten Kern-Code stehen **Architekturbild, K5-Ausschnitt (Datenmodell) und K3 (Zustandsmodell)** als Entwürfe. Abgenommen werden nur die K1-Durchstich-Fälle, K3 und der K5-Ausschnitt; K2/K8/K9/K10/K11 bleiben dünn und wachsen mit dem Code. **Kern-Qualität ist von Anfang an voll** (Zustandsmaschine, RLS, unveränderliches Event-Log). Der **Arbeitszyklus** (§4a) und **„Code nur auf Ansage je AP"** bleiben unverändert; „agiler" heißt früher Code, nicht weniger Sorgfalt.
 
-- **Landkarte:** `docs/konzept/README.md` — elf Artefakte K1–K11 in fester Reihenfolge, jedes mit eigenem Arbeitspaket (AP-003 … AP-013). Format angelehnt an Sirats Advansure-Konzept aus dem Projektsemester.
+- **Landkarte:** `docs/konzept/README.md` — die Artefakte K1–K11, jedes mit eigenem Arbeitspaket (AP-003 … AP-013); nicht mehr in fester Reihenfolge, sondern fallweise gefüllt. Format angelehnt an Sirats Advansure-Konzept aus dem Projektsemester.
 - **Du führst das Gespräch.** Konzipieren heißt hier: *zusammen mit Sirat*. Lade den passenden Konzept-Skill und arbeite im Dialog — erst nachlesen, was Briefing und Business Brain schon sagen, dann in kleinen Runden fragen, was nur Sirat weiß (Ablauf im Restaurant, Ausnahmen, Zahlen). Nie einen fertigen Anwendungsfall „ausspucken", den er nur noch abnicken soll.
 - **`requirements-engineer` arbeitet dir zu:** Entwürfe schreiben, gegen Nachbar-Artefakte, Briefing und Business Brain prüfen, Rückverfolgung pflegen. Er kann nicht mit Sirat reden — seine Fragen stellst du.
 - **Nichts erfinden.** Geschäftsregeln, Abläufe, Fristen, Zahlen kommen von Sirat, vom Piloten, von Anwalt oder Steuerberaterin. Was fehlt, steht als `> **Frage an Sirat:**` im Artefakt oder als Qn in `docs/open-questions.md`.
@@ -154,6 +154,9 @@ Sirat will die Idee erst konzipieren, dann entwickeln (2026-09-18). Bis die Arte
 | `compliance-guard` | rot | Voice, Logs, Personendaten, Kasse/TSE, Löschung, Website-Checkout |
 | `security-reviewer` | rot | Login, Tokens, Webhooks, Zahlung, Uploads, Domains |
 | `voice-integrator` | lila | Anrufmanager KI, Retell, Function Calls, Metering |
+| `react-reviewer` | gelb | React/PWA-Code in `apps/web-staff`, `apps/site`: Hooks, Rendering, Offline-Muster — ergänzt `code-reviewer` |
+| `a11y-architect` | gelb | Barrierefreiheit (WCAG 2.2 AA) jeder Oberfläche, K10-Wireframes, Website vor Release |
+| `type-design-analyzer` | gelb | Zod-Schemas und Kern-Typen: Kapselung, Invarianten, eine Definition je Datenform (AP-015) |
 | `build-error-resolver` | orange | Build, Typen, Lint oder dependency-cruiser sind rot |
 | `doc-updater` | pink | Roadmap, offene Fragen, ADRs, Skills nachziehen |
 | `Explore` (eingebaut) | — | breite Suche im Repo oder im Business Brain, wenn du nur das Ergebnis brauchst |
@@ -172,6 +175,9 @@ Farblogik: **blau** plant · **grün** testet · **gelb** prüft Code · **rot**
 | `fluvo-fiscal` | TSE, DSFinV-K, Kassensturz |
 | `fluvo-compliance` | Personendaten, Logging, Löschung, Website-Pflichten |
 | `new-module` | ein Modul wird erstmals angelegt |
+| `fluvo-ui-design` | jede Oberfläche: Design-Richtung vor dem ersten Screen (Tablet im Stress, Inhaber am Handy, Betreiber-Ampel, Website), K10 |
+| `fluvo-accessibility` | Barrierefreiheit als Bauvorgabe: Kontrast, Fokus, Labels, axe-Tests; vor Review und Website-Release |
+| `fluvo-design-system` | Tokens (Farbe, Abstand, Typo) als eine Quelle; PRs, die Styling berühren |
 | `konzept-anwendungsfall` | fachliche/technische Anwendungsfälle und Testszenarien (K1, K7) |
 | `konzept-diagramme` | Prozess-, Zustands-, Kontext-, ER-Diagramme als Mermaid (K2, K3, K5, K9) |
 | `konzept-vertraege` | Kern-Befehle, Events, API, Webhooks, Datenwörterbuch, NFA, Ausfälle, Rollen (K5, K6, K8, K9) |
@@ -188,7 +194,7 @@ Farblogik: **blau** plant · **grün** testet · **gelb** prüft Code · **rot**
 | Kern-Funktion | `planner` → `tdd-guide` → Umsetzung → `code-reviewer` + `database-reviewer` + `tenant-isolation-guard` → `doc-updater` |
 | Neues Modul | `architect` (kurz) → Skill `new-module` → wie Kern-Funktion |
 | Voice | `voice-integrator` + `tdd-guide` → `compliance-guard` + `security-reviewer` + `silent-failure-hunter` |
-| Oberfläche (PWA) | Skill `fluvo-offline-pwa` → `code-reviewer` → `e2e-runner` |
+| Oberfläche (PWA, Website) | Skills `fluvo-ui-design` + `fluvo-offline-pwa` (+ `fluvo-design-system`, sobald Tokens existieren) → `code-reviewer` + `react-reviewer` + `a11y-architect` → `e2e-runner` |
 | Kasse / TSE / Löschung | Skill `fluvo-fiscal` bzw. `fluvo-compliance` → `compliance-guard` + `database-reviewer` |
 | Etwas ist rot | `build-error-resolver`, danach die ursprünglichen Reviewer erneut |
 

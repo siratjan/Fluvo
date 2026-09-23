@@ -24,6 +24,8 @@
 5. Das System speichert. Ab dem gewählten Zeitpunkt nennen KI und Website den neuen Preis. Ein zu diesem Zeitpunkt **laufendes KI-Gespräch** rechnet mit dem Preisstand vom **Gesprächsbeginn** zu Ende.
 6. Bereits aufgenommene Bestellungen behalten ihren Preis und Artikeltext (eingefroren).
 
+> **Nachtrag Runde 51 (2026-09-23, aus dem Kreuzverhör FA-01 — FA-12-Detail, beim Einzeldurchgang zu vertiefen):** **Extra-Zutaten** („extra Zwiebeln") sind **bepreiste Optionen**, nicht Notizen. Der **Aufpreis je Extra hängt von der Größe/Variante** des Artikels ab (Beispiel Sirat: kleine Pizza Margherita, Extra-Zutat Zwiebel = 50 Cent); der **Server** rechnet den Aufpreis, die KI/Annahme nennen ihn mit ([ENTSCHIEDEN Sirat 2026-09-23], Mitschrift Runde 51). Das genaue **Options-/Varianten-Modell** (wie der größen-/variantenabhängige Aufpreis hinterlegt wird) ist ein FA-12-Detail → siehe Offene Fragen und K5.
+
 ## Ausnahmeabläufe
 
 - **2a. „Momentan aus" (Verfügbarkeit)** (zweigt von Schritt 2 ab): Der Inhaber **oder die Annahme** (Betriebsrecht, Runde 11) markiert einen Artikel als momentan nicht verfügbar. Das wirkt **sofort** für alle Kanäle; die KI bietet ihn nicht mehr an (FA-01, Ausnahme 5a). **Zurücksetzen (Einschalten)** dürfen **Annahme und Inhaber**. **Kein automatisches Zurücksetzen** am nächsten Tag: Der Artikel bleibt sichtbar als „momentan aus" gekennzeichnet, **bis ihn jemand von Hand wieder einschaltet** (Sirat, Runde 27, bestätigt Runde 28, 2026-09-22 — B12; ändert die frühere Lesart „springt am nächsten Geschäftstag von selbst zurück"). Länger nicht verfügbare Artikel nimmt der Inhaber oder die Annahme von der Karte (2c). Endet in: Artikel nicht bestellbar, bis Annahme oder Inhaber ihn von Hand wieder einschalten.
@@ -71,20 +73,20 @@
 
 | Szenario | Eingabe / Setup | Erwartetes Ergebnis | Darf nicht | Prüfung |
 |---|---|---|---|---|
-| Preis sofort ändern | Inhaber ändert Preis eines Artikels, „sofort" | Nächster Anruf/Website nennt neuen Preis | Alter Preis nach der Änderung | manuell am Gerät + automatisch |
-| Preis „gültig ab" Datum | Inhaber wählt ein Datum (z. B. morgen); nur Datum, keine Uhrzeit wählbar | Bis Tagesende des Vortags alter Preis, ab Tagesbeginn des gewählten Datums neuer Preis | Neuer Preis vor dem gewählten Datum; Uhrzeit-Eingabe | automatisch |
-| Laufendes Gespräch bei sofortiger Änderung (Grenzfall) | Preis wird geändert, während ein KI-Gespräch schon läuft | Gespräch rechnet mit Startpreis zu Ende | Änderung trifft das laufende Gespräch | automatisch |
-| Bereits aufgenommene Bestellung | Bestellung angelegt, danach Preis geändert | Bestellung behält alten Preis und Artikeltext | Rückwirkende Preisänderung | automatisch |
-| „Momentan aus" | Artikel als momentan aus markiert | KI/Website bieten ihn sofort nicht mehr an | Artikel bleibt bestellbar | manuell + automatisch |
-| „Momentan aus" wieder einschalten (Annahme) | Annahme setzt einen „momentan aus"-Artikel wieder auf verfügbar | Artikel wieder bestellbar; Annahme darf einschalten | Nur der Inhaber darf einschalten | manuell + automatisch |
-| „Momentan aus" springt **nicht** von selbst zurück (Grenzfall) | Artikel „momentan aus", nächster Geschäftstag beginnt, niemand schaltet ein | Artikel bleibt „momentan aus", bis jemand ihn von Hand wieder einschaltet | Artikel wird am nächsten Tag von selbst wieder verfügbar | automatisch |
-| Artikel ohne Preis anlegen (Grenzfall) | Inhaber (oder Annahme) versucht, einen Artikel **ohne Preis** anzulegen | Anlegen scheitert, Hinweis „Artikel konnte nicht angelegt werden, weil der Preis fehlt", **nichts gespeichert** | Artikel ohne Preis wird gespeichert | automatisch |
-| Annahme versucht Artikel anzulegen (B10 eingeschränkt) | Annahme (Betriebsrechte) versucht, einen Artikel anzulegen — sie kann keinen Preis setzen | Anlegen kommt nicht zustande (ohne Preis kein Datensatz), Hinweis; **nichts gespeichert** | Annahme legt einen Artikel an oder setzt einen Preis | automatisch |
-| Annahme entfernt Artikel/Option (B10) | Annahme (Betriebsrechte) entfernt einen Artikel und eine Option | Entfernen gelingt; die Änderung ist **für den Inhaber dokumentiert** (Log); alte Bestellungen behalten den eingefrorenen Artikeltext | Entfernen ohne Dokumentation für den Inhaber | automatisch |
-| Allergen ändern (Grenzfall) | Inhaber ändert ein Allergen | Deutliche Warnung, Bestätigung nötig, Änderung protokolliert | Änderung ohne Warnung/Protokoll | manuell + automatisch |
-| Steuersatz ändern (Grenzfall) | Inhaber ändert den Steuersatz eines Artikels | Deutliche Warnung, Bestätigung nötig, Änderung protokolliert | Änderung ohne Warnung/Protokoll | manuell + automatisch |
-| Annahme-Grenzen an der Karte | Annahme (Betriebsrechte) versucht, Preis/Allergen/Steuersatz zu ändern und einen Artikel anzulegen, und schaltet einen Artikel „momentan aus" | Preis/Allergen/Steuersatz **nicht** änderbar (nur Inhaber); Anlegen kommt ohne Preis nicht zustande; „momentan aus" gelingt | Annahme ändert Preis/Allergen/Steuersatz oder legt einen Artikel an | automatisch |
-| Zwei-Restaurant-Fall | Inhaber A ändert Preis; Restaurant B hat eigene Karte | Nur A's Karte ändert sich; B unverändert und für A nicht sichtbar | Übergriff auf fremden Tenant | automatisch |
+| FA-12-T1 · Preis sofort ändern | Inhaber ändert Preis eines Artikels, „sofort" | Nächster Anruf/Website nennt neuen Preis | Alter Preis nach der Änderung | manuell am Gerät + automatisch |
+| FA-12-T2 · Preis „gültig ab" Datum | Inhaber wählt ein Datum (z. B. morgen); nur Datum, keine Uhrzeit wählbar | Bis Tagesende des Vortags alter Preis, ab Tagesbeginn des gewählten Datums neuer Preis | Neuer Preis vor dem gewählten Datum; Uhrzeit-Eingabe | automatisch |
+| FA-12-T3 · Laufendes Gespräch bei sofortiger Änderung (Grenzfall) | Preis wird geändert, während ein KI-Gespräch schon läuft | Gespräch rechnet mit Startpreis zu Ende | Änderung trifft das laufende Gespräch | automatisch |
+| FA-12-T4 · Bereits aufgenommene Bestellung | Bestellung angelegt, danach Preis geändert | Bestellung behält alten Preis und Artikeltext | Rückwirkende Preisänderung | automatisch |
+| FA-12-T5 · „Momentan aus" | Artikel als momentan aus markiert | KI/Website bieten ihn sofort nicht mehr an | Artikel bleibt bestellbar | manuell + automatisch |
+| FA-12-T6 · „Momentan aus" wieder einschalten (Annahme) | Annahme setzt einen „momentan aus"-Artikel wieder auf verfügbar | Artikel wieder bestellbar; Annahme darf einschalten | Nur der Inhaber darf einschalten | manuell + automatisch |
+| FA-12-T7 · „Momentan aus" springt **nicht** von selbst zurück (Grenzfall) | Artikel „momentan aus", nächster Geschäftstag beginnt, niemand schaltet ein | Artikel bleibt „momentan aus", bis jemand ihn von Hand wieder einschaltet | Artikel wird am nächsten Tag von selbst wieder verfügbar | automatisch |
+| FA-12-T8 · Artikel ohne Preis anlegen (Grenzfall) | Inhaber (oder Annahme) versucht, einen Artikel **ohne Preis** anzulegen | Anlegen scheitert, Hinweis „Artikel konnte nicht angelegt werden, weil der Preis fehlt", **nichts gespeichert** | Artikel ohne Preis wird gespeichert | automatisch |
+| FA-12-T9 · Annahme versucht Artikel anzulegen (B10 eingeschränkt) | Annahme (Betriebsrechte) versucht, einen Artikel anzulegen — sie kann keinen Preis setzen | Anlegen kommt nicht zustande (ohne Preis kein Datensatz), Hinweis; **nichts gespeichert** | Annahme legt einen Artikel an oder setzt einen Preis | automatisch |
+| FA-12-T10 · Annahme entfernt Artikel/Option (B10) | Annahme (Betriebsrechte) entfernt einen Artikel und eine Option | Entfernen gelingt; die Änderung ist **für den Inhaber dokumentiert** (Log); alte Bestellungen behalten den eingefrorenen Artikeltext | Entfernen ohne Dokumentation für den Inhaber | automatisch |
+| FA-12-T11 · Allergen ändern (Grenzfall) | Inhaber ändert ein Allergen | Deutliche Warnung, Bestätigung nötig, Änderung protokolliert | Änderung ohne Warnung/Protokoll | manuell + automatisch |
+| FA-12-T12 · Steuersatz ändern (Grenzfall) | Inhaber ändert den Steuersatz eines Artikels | Deutliche Warnung, Bestätigung nötig, Änderung protokolliert | Änderung ohne Warnung/Protokoll | manuell + automatisch |
+| FA-12-T13 · Annahme-Grenzen an der Karte | Annahme (Betriebsrechte) versucht, Preis/Allergen/Steuersatz zu ändern und einen Artikel anzulegen, und schaltet einen Artikel „momentan aus" | Preis/Allergen/Steuersatz **nicht** änderbar (nur Inhaber); Anlegen kommt ohne Preis nicht zustande; „momentan aus" gelingt | Annahme ändert Preis/Allergen/Steuersatz oder legt einen Artikel an | automatisch |
+| FA-12-T14 · Zwei-Restaurant-Fall | Inhaber A ändert Preis; Restaurant B hat eigene Karte | Nur A's Karte ändert sich; B unverändert und für A nicht sichtbar | Übergriff auf fremden Tenant | automatisch |
 
 ## Rückverfolgung
 
@@ -92,10 +94,12 @@
 - **Zustandsübergänge:** keiner an einer Bestellung — Stammdatenänderung; wirkt auf künftige `createOrder`-Aufrufe.
 - **Technische Anwendungsfälle:** TU-? (Preis mit „gültig ab", Verfügbarkeit, Allergen/Steuer mit Protokoll, Prompt-Synchronisation der KI; Zuordnung in K7)
 - **Verträge / Events:** vorläufig `menu.updated`, `menu.price_scheduled`, Protokoll-Ereignis für Allergen-/Steueränderung (Namen offen, K6); Preisstand-Regel berührt FA-01
-- **Testszenarien:** FA-12-T1 … (Tabelle oben)
+- **Testszenarien:** FA-12-T1 … FA-12-T14 (Tabelle oben)
 - **Nachbar-Fälle:** FA-01 (KI nennt Preise/nimmt „momentan aus" wahr), FA-05 (Annahme nutzt dieselbe Karte), FA-17 (Zonen/Lieferzeit, Liefergebiet), FA-20 (Onboarding legt Karte an), FA-21 (Betreiber-Rechte)
 
 ## Offene Fragen
+
+> **Frage an Sirat (Runde 51, Options-/Varianten-Modell):** Extra-Zutaten sind bepreiste Optionen mit **größen-/variantenabhängigem Aufpreis** (Runde 51). Wie wird der Aufpreis hinterlegt — **je Größe/Variante ein eigener Aufpreis** je Extra, oder eine **Faktor-/Staffelregel**? Und pflegt der Inhaber jeden Extra-Aufpreis einzeln? (FA-12-Detail; wirkt auf K5-Datenmodell und die Preisrechnung.)
 
 > **Frage an Sirat / Anwalt:** Wer haftet für falsche **Allergen-/Steuerangaben**, wenn der Inhaber sie selbst pflegt? Genügt Warnung + Protokoll, oder braucht es eine Freigabe durch den Betreiber? (In Runde 47 nicht behandelt, bleibt offen — neben Q10.)
 

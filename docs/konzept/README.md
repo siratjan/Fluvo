@@ -1,12 +1,12 @@
 # Konzept fluvo — Artefakt-Landkarte
 
-Stand: 2026-09-22 · Gepflegt von **Jarvis** und `requirements-engineer` · Aufbau angelehnt an Sirats Advansure-Konzept, erweitert um das, was fluvo zusätzlich braucht (Zustandsmodell, Gesprächsdesign, Datenklassen, Ausfälle).
+Stand: 2026-09-23 · Gepflegt von **Jarvis** und `requirements-engineer` · Aufbau angelehnt an Sirats Advansure-Konzept, erweitert um das, was fluvo zusätzlich braucht (Zustandsmodell, Gesprächsdesign, Datenklassen, Ausfälle).
 
-**Zweck:** Bevor Code entsteht, steht hier, *was* gebaut wird — so genau, dass man danach bauen und testen kann. Konzipiert wird zuerst nur der **Piloten-Durchstich**: Anruf → Bestellung → Bon (plus Kassieren am Tresen). Der **Fahrer-Teil** kommt nach dem ersten Piloten als eigene App (ADR 0008, 2026-09-21); Küche, Website und Abrechnung folgen, wenn sie dran sind.
+**Zweck:** Hier steht, *was* gebaut wird — so genau, dass man danach bauen und testen kann. Konzipiert wird zuerst nur der **Piloten-Durchstich**: Anruf → Bestellung → Bon (plus Kassieren am Tresen). Seit 2026-09-23 (ADR [0014](../decisions/0014-vorgehen-durchstich-spur.md)) entstehen die Artefakte **fallweise nebenbei zum Code** statt K1–K11 vollständig vorab: Architekturbild, K5-Ausschnitt und K3 stehen vor dem ersten Kern-Code, K2/K8/K9/K10/K11 bleiben dünn und wachsen mit dem Code. Der **Fahrer-Teil** kommt nach dem ersten Piloten als eigene App (ADR 0008, 2026-09-21); Küche, Website und Abrechnung folgen, wenn sie dran sind.
 
-**Arbeiten:** `/konzept` zeigt den Stand und setzt am nächsten Artefakt an. `/council <Frage>` holt vier Stimmen zu einer offenen Entscheidung. Alles entsteht im Gespräch mit Sirat — nichts wird erfunden.
+**Arbeiten:** `/konzept` zeigt den Stand und setzt am nächsten Artefakt an. `/council <Frage>` holt vier Stimmen zu einer offenen Entscheidung. Alles entsteht im Gespräch mit Sirat — nichts wird erfunden. Abgenommen werden in der Durchstich-Spur nur die K1-Durchstich-Fälle, K3 und der K5-Ausschnitt.
 
-**Status:** `leer` → `Entwurf` → `mit Sirat durchgegangen` → `abgenommen` (nur nach Kreuzverhör und Sirats Ja)
+**Status:** `leer` → `Entwurf` → `mit Sirat durchgegangen` → `abgenommen` (nur nach Kreuzverhör und Sirats Ja; erstmals erreicht von FA-01 am 2026-09-23)
 
 ## Artefakte
 
@@ -14,11 +14,12 @@ Reihenfolge ist Absicht: Jedes baut auf dem vorigen auf.
 
 | ID | Artefakt | Ort | Status | Paket | Entspricht Advansure |
 |---|---|---|---|---|---|
-| K1 | Fachliche Anwendungsfälle (FA-xx) mit Testszenarien | [anwendungsfaelle/](anwendungsfaelle/) | Entwurf (22 von 22) — gegengelesen 2026-09-21, Runden 15–18 eingearbeitet (ADR 0007), Runden 21–30 eingearbeitet (B10–B18, B20, FA-19 neu); Einzeldurchsicht FA-01/FA-06/FA-15/FA-05/FA-11 (Runden 32–41, FA-11: Runde 41 eingearbeitet — geänderter Bon auf Anforderung/Variante B, keine Rückfrage offen zu FA-11); Runde 42 (FA-23 — Annahmestopp: Tagesende = Ladenschluss, im Monitoring FA-22 sichtbar); Runde 43 (FA-16/FA-19 — Wechselgeld-Ausgabe ohne Bestätigung, ein Tablet mit PIN-Wechsel, Inhaber bestätigt auch vom Handy; ändert ADR 0007, Nachtrag folgt); Runde 44 (FA-17/FA-18); Runde 45 (FA-13/FA-14 — KI läuft bei Internetausfall im Laden weiter, Server pausiert die KI-Annahme automatisch bei nicht erreichbarem Gerät; Bon-Nachdruck nach Netz-Rückkehr); Runde 46 (FA-14 — Papier-Betrieb beim Ausfall, kein Nachtrag/Variante B, sofortiges Umsteigen; FA-14 ohne offene Rückfrage durchgegangen); Runde 47 (FA-12 — „gültig ab" = Datum, Artikel ohne Preis wird nicht angelegt); Runde 48 (FA-21/FA-22 — Modul-/Paketänderung wirkt sofort, Sperre = keine neuen Bestellungen, Störungs-Ampel im Minutentakt, Betreiber ohne Bestell-/Nummer-Einsicht; Bestätigungen 44/47 eingearbeitet, Lesart-Markierungen entfernt); Runde 49 (Wechselgeld raus, ADR 0012 — kein Wechselgeld-Start/keine Einstellung/kein Abschluss-Anteil; FA-16/FA-19 nachgezogen; FA-20 Onboarding ohne Wechselgeld-Schritt, Geräte-Registrierung als eigener Schritt); Runde 50 (FA-21 Modul abbuchen: offene Vorgänge zu Ende; FA-22 Gelb ab 80 %) | AP-003 | 2.2 + 2.7.1 |
+| K0 | Architekturbild mit Technologie- und Skalierungsaussage | [modelle/architektur.md](modelle/architektur.md) | Entwurf (2026-09-23, ADR 0014) — aus Briefing §4/§5, aktualisiert um ADR 0008–0013; Gegenlesen `architect` und Durchgang mit Sirat stehen aus | — | Briefing §4/§5 |
+| K1 | Fachliche Anwendungsfälle (FA-xx) mit Testszenarien | [anwendungsfaelle/](anwendungsfaelle/) | Entwurf (23 von 23, inkl. FA-24; **FA-01 abgenommen 2026-09-23**) — gegengelesen 2026-09-21, Runden 15–18 eingearbeitet (ADR 0007), Runden 21–30 eingearbeitet (B10–B18, B20, FA-19 neu); Einzeldurchsicht FA-01/FA-06/FA-15/FA-05/FA-11 (Runden 32–41, FA-11: Runde 41 eingearbeitet — geänderter Bon auf Anforderung/Variante B, keine Rückfrage offen zu FA-11); Runde 42 (FA-23 — Annahmestopp: Tagesende = Ladenschluss, im Monitoring FA-22 sichtbar); Runde 43 (FA-16/FA-19 — Wechselgeld-Ausgabe ohne Bestätigung, ein Tablet mit PIN-Wechsel, Inhaber bestätigt auch vom Handy; ändert ADR 0007, Nachtrag folgt); Runde 44 (FA-17/FA-18); Runde 45 (FA-13/FA-14 — KI läuft bei Internetausfall im Laden weiter, Server pausiert die KI-Annahme automatisch bei nicht erreichbarem Gerät; Bon-Nachdruck nach Netz-Rückkehr); Runde 46 (FA-14 — Papier-Betrieb beim Ausfall, kein Nachtrag/Variante B, sofortiges Umsteigen; FA-14 ohne offene Rückfrage durchgegangen); Runde 47 (FA-12 — „gültig ab" = Datum, Artikel ohne Preis wird nicht angelegt); Runde 48 (FA-21/FA-22 — Modul-/Paketänderung wirkt sofort, Sperre = keine neuen Bestellungen, Störungs-Ampel im Minutentakt, Betreiber ohne Bestell-/Nummer-Einsicht; Bestätigungen 44/47 eingearbeitet, Lesart-Markierungen entfernt); Runde 49 (Wechselgeld raus, ADR 0012 — kein Wechselgeld-Start/keine Einstellung/kein Abschluss-Anteil; FA-16/FA-19 nachgezogen; FA-20 Onboarding ohne Wechselgeld-Schritt, Geräte-Registrierung als eigener Schritt); Runde 50 (FA-21 Modul abbuchen: offene Vorgänge zu Ende; FA-22 Gelb ab 80 %); **Runde 51 (Kreuzverhör FA-01 eingearbeitet — Bestellart als Pflichtangabe, Notizfeld, bepreiste Extra-Optionen, strukturierte Adresse, bekannte Lieferorte, Zahlungsmöglichkeit, Großbestellungs-Schwelle, Ausnahmen 7b/9b/13a, Sprachen; FA-24 neu; Nachträge in FA-03/05/06/12/20/22)** | AP-003 | 2.2 + 2.7.1 |
 | K2 | Prozessmodell: Gesamtprozess + Sub-Prozess KI-Gespräch | [modelle/](modelle/) | leer | AP-004 | 2.3 |
-| K3 | Zustandsmodell der Bestellung mit Übergangstabelle | [modelle/zustand-bestellung.md](modelle/) | leer | AP-005 | — (neu) |
+| K3 | Zustandsmodell der Bestellung mit Übergangstabelle | [modelle/zustand-bestellung.md](modelle/zustand-bestellung.md) | Entwurf (2026-09-23) — Gegenlesen `architect` eingearbeitet; **Q13 entschieden (ADR 0015)**; Kreuzverhör und Abnahme stehen aus | AP-005 | — (neu) |
 | K4 | Gesprächsdesign der KI: Fluss, Function Calls, Eskalation, Verbote, Testanrufe | [gespraech/](gespraech/) | leer | AP-006 | — (neu) |
-| K5 | Datenmodell (ER) + Datenwörterbuch mit DSGVO/GoBD-Klasse | [modelle/](modelle/), [vertraege/](vertraege/) | leer | AP-007 | — (neu) |
+| K5 | Datenmodell (ER) + Datenwörterbuch mit DSGVO/GoBD-Klasse | [modelle/er-durchstich.md](modelle/er-durchstich.md), [vertraege/datenwoerterbuch.md](vertraege/datenwoerterbuch.md) | Entwurf (2026-09-23; 25 Tabellen, Durchstich-Ausschnitt) — Gegenlesen `database-reviewer` + `compliance-guard` eingearbeitet; **Datenklassen entschieden (ADR 0016)**; Durchgang mit Sirat und Abnahme stehen aus; offen: Anwalt A1–A6, Steuerberaterin S1–S3, Q26 | AP-007 | — (neu) |
 | K6 | Verträge: Kern-Befehle, Ereignis-Katalog, API, Webhooks | [vertraege/](vertraege/) | leer | AP-008 | 2.4 (verbindlicher) |
 | K7 | Technische Anwendungsfälle (TU-xx) mit Testszenarien | [anwendungsfaelle/](anwendungsfaelle/) | leer | AP-009 | 2.4 + 2.7.2 |
 | K8 | Nicht-funktionale Anforderungen mit Zahlen | [vertraege/nfa.md](vertraege/) | leer | AP-010 | — (neu) |
@@ -26,7 +27,7 @@ Reihenfolge ist Absicht: Jedes baut auf dem vorigen auf.
 | K10 | Oberflächen: Wireframes Annahme · Fahrer · Admin, Bon-Layout | [oberflaechen/](oberflaechen/) | leer | AP-012 | — (neu) |
 | K11 | Pilot-Erfolgskriterien und MVP-Schnitt | [pilot.md](.) | leer | AP-013 | 1.3 + 3.2 |
 
-Bereits vorhanden und **nicht** neu zu schreiben: Problem, Lösung, Zielgruppe, feste Entscheidungen, Architekturbild, Tech-Stack → [../briefing.md](../briefing.md). Offene Entscheidungen → [../open-questions.md](../open-questions.md).
+Bereits vorhanden und **nicht** neu zu schreiben: Problem, Lösung, Zielgruppe, feste Entscheidungen, Tech-Stack → [../briefing.md](../briefing.md). Das Architekturbild fasst K0 als Durchstich-Entwurf aus Briefing §4/§5 zusammen. Offene Entscheidungen → [../open-questions.md](../open-questions.md).
 
 Parallel, außerhalb dieses Ordners: die zwei Risikotests AP-001 (Rufumleitung) und AP-002 (Drucker). Ihr Ergebnis verändert K1, K4 und K9 — nicht aufschieben.
 
@@ -40,7 +41,7 @@ Drei **Bestellarten**: Lieferung · Abholung nach Anruf · Mitnehmen (Kunde komm
 
 | ID | Titel | Akteur | Status |
 |---|---|---|---|
-| FA-01 | KI nimmt Anruf an und Bestellung auf (Lieferung, Abholung, Vorbestellung) | Anrufer, KI-Assistent | mit Sirat durchgegangen 2026-09-22 |
+| FA-01 | KI nimmt Anruf an und Bestellung auf (Lieferung, Abholung, Vorbestellung) | Anrufer, KI-Assistent | **abgenommen** (Sirat, 2026-09-23) — erster abgenommener Fall; Kreuzverhör Runde 51 |
 | FA-02 | Stammkunde ruft an | Anrufer, KI-Assistent | Entwurf — abhängig von AP-001/Q1 bzw. Q4, nach dem Test nachziehen |
 | FA-03 | KI übergibt an einen Menschen (Eskalation, auch Änderungs-/Stornowunsch) | Anrufer, KI-Assistent, Annahme | Entwurf — abhängig von AP-001/Q1 bzw. Q4, nach dem Test nachziehen |
 | FA-04 | Anrufer bricht vor der Bestätigung ab | Anrufer | Entwurf — abhängig von AP-001/Q1 bzw. Q4, nach dem Test nachziehen |
@@ -63,6 +64,7 @@ Drei **Bestellarten**: Lieferung · Abholung nach Anruf · Mitnehmen (Kunde komm
 | FA-21 | Module und Paket eines Restaurants schalten | Betreiber | mit Sirat durchgegangen 2026-09-22 |
 | FA-22 | Gesundheitszustand der Restaurants überwachen (ohne Einsicht in Bestellungen) | Betreiber | mit Sirat durchgegangen 2026-09-22 |
 | FA-23 | Annahmestopp („keine Lieferung mehr" / „gar nichts mehr") | Annahme, Inhaber | mit Sirat durchgegangen 2026-09-22 |
+| FA-24 | Bekannte Lieferorte pflegen und nutzen | Inhaber, Annahme, KI-Assistent | Entwurf (aus Kreuzverhör FA-01, Runde 51) — mit Sirat noch nicht einzeln durchgegangen |
 
 ## Rückverfolgung
 

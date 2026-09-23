@@ -1,6 +1,6 @@
 # Roadmap
 
-Stand: 2026-09-22 · Quelle: [briefing.md](briefing.md) §7 · Gepflegt vom Agenten `doc-updater`.
+Stand: 2026-09-23 · Quelle: [briefing.md](briefing.md) §7 · Gepflegt vom Agenten `doc-updater`.
 
 Ziel ist ein dünner Durchstich für den Piloten: **Anruf → Bestellung → gedruckter Bon.**
 
@@ -15,14 +15,28 @@ Beide können die Architektur noch kippen und kosten wenig. Details in [open-que
 | R1 | Rufumleitung bei Nichtmelden mit dem echten Pilot-Anschluss: Kommt die Nummer des Anrufers an? Wie lange klingelt es? | als Nächstes | AP-001 **freigegeben**; Termin beim Piloten **Freitag 2026-09-25** |
 | R2 | Star-Drucker: CloudPRNT-Abfrage und lokaler Druck aus einer HTTPS-PWA ohne Internet | als Nächstes | AP-002 weiter **vorgeschlagen**. Hinweis: durch ADR 0008 druckt der Pilot bei **Lieferung zwei Exemplare** — für den Druckertest einplanen |
 
-## Konzeptphase — vor dem ersten Code
+## Durchstich-Spur — Konzept und Code (ADR 0014)
 
-Von Sirat am 2026-09-18 festgelegt: erst konzipieren, dann entwickeln. Elf Artefakte K1–K11 für den Piloten-Durchstich; Landkarte und Status in [konzept/README.md](konzept/README.md), je Artefakt ein Arbeitspaket (AP-003 … AP-013). Läuft parallel zu R1 und R2.
+Seit 2026-09-23 (ADR [0014](decisions/0014-vorgehen-durchstich-spur.md), ersetzt das Vorgehen „erst konzipieren, dann entwickeln" vom 2026-09-18): Der Piloten-Durchstich wird als **eine Spur** aus Konzept und Code gebaut, statt K2–K11 vollständig vor dem ersten Code abzunehmen. Implementieren zuerst, Konzept-Artefakte fallweise nebenbei; Kern-Qualität (Zustandsmaschine, RLS, Event-Log) von Anfang an voll. **Code je Stufe nur auf Sirats Ansage** — diese Spur ist ein Plan, keine Blanko-Freigabe. Läuft parallel zu R1 und R2.
+
+| Stufe | Schritt | Status | Anmerkung |
+|---|---|---|---|
+| 0 | Fundament (Konzept, kein Code): Architekturbild mit Skalierungsaussage, K5-Ausschnitt Datenmodell, K3 Zustandsmodell als eine Seite | in Arbeit | Entwürfe vorhanden 2026-09-23: `konzept/modelle/architektur.md` (Architekturbild), K5-Ausschnitt (`konzept/modelle/er-durchstich.md`) und `konzept/modelle/zustand-bestellung.md` (K3). **Gegenlesen `architect`/`database-reviewer`/`compliance-guard` alle eingearbeitet.** Q13 (Zustandskette, ADR 0015) und die drei Datenklassen (ADR 0016) am 2026-09-23 von Sirat **entschieden**. Offen: **Durchgang Architekturbild mit Sirat**, Durchgang/Abnahme K3 und K5-Ausschnitt |
+| 1 | Kern als Code mit Tests aus den K1-Durchstich-Fällen (Zustandsmaschine, Preise, `createOrder`, Mandantentrennung, Event-Log) | offen | Code nur auf Ansage. AP-014 (Monorepo-Gerüst) und AP-015 (Kern-Durchstich) **vorgeschlagen**, Ansage steht aus |
+| 2 | Voice-Adapter gegen die Sandbox; K4 (Gesprächsdesign) entsteht im Bau | offen | Code nur auf Ansage; hängt an R1 |
+| 3 | Annahme minimal + Bon-Druck | offen | Code nur auf Ansage; hängt an R2 |
+| 4 | Zehn Testanrufe, danach Konzept an der Realität nachziehen | offen | Code nur auf Ansage |
+
+**K2, K8, K9, K10, K11 bleiben „dünn" und wachsen mit dem Code** — nicht vorab ausgearbeitet, sondern gefüllt, sobald der Durchstich sie berührt. Konzept-Abnahmen (`abgenommen`) gibt es in dieser Stufe nur für die K1-Durchstich-Fälle, K3 und den K5-Ausschnitt. Nicht in der Spur (zurückgestellt): FA-24, Großbestellung, Sprachen über Deutsch/Englisch hinaus, Onboarding, Betreiber-Monitoring, Kassen-/Tresen-Abschluss.
+
+### Konzept-Fortschritt (K1–K11)
+
+Landkarte und Status je Artefakt in [konzept/README.md](konzept/README.md), je Artefakt ein Arbeitspaket (AP-003 … AP-013).
 
 | # | Schritt | Status | Anmerkung |
 |---|---|---|---|
-| K | Konzept für den Piloten-Durchstich (K1–K11) | in Arbeit | K1 fast durchgegangen (16 von 22 Fällen mit Sirat besprochen); K2–K11 offen — `/konzept` |
-| K1 | Fachliche Anwendungsfälle (AP-003) | in Arbeit | **22 Entwürfe**, davon **3 zurückgestellt** (FA-08/09/10, Fahrer-Teil, ADR 0008). Einzeldurchsicht: **16 von 22 Fällen mit Sirat durchgegangen** (FA-01, 05, 06, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23; Runden 32–50). **FA-02/03/04** warten auf AP-001 (Rufumleitungs-Test, Freitag **2026-09-25**), danach nachziehen. Heute neu: ADR **0011** (Wechselgeld ohne Bestätigung, Inhaber-Abschluss auch vom Handy, keine eigene Storno-Anzeige, geänderter Bon als Angebot) ADR **0012** (Wechselgeld ganz aus dem System) und ADR **0013** (Internetausfall: KI pausiert automatisch, Papier statt Warteschlange, kein Nachtrag — Abweichung von [FEST 18] nur für den Piloten). **Kein Kreuzverhör, keine Abnahme.** Nächster Schritt: Kreuzverhör (`grilling`) der 16 Fälle, Testszenario-Labels bereinigen (Befund A3), FA-02/03/04 nach dem Freitag-Test |
+| K | Konzept für den Piloten-Durchstich (K1–K11) | in Arbeit | Fallweise nach ADR 0014; K3 und K5-Ausschnitt als Entwurf, K2/K8/K9/K10/K11 dünn — `/konzept` |
+| K1 | Fachliche Anwendungsfälle (AP-003) | in Arbeit | **23 Entwürfe** (inkl. **FA-24 neu**, „bekannte Lieferorte", aus Kreuzverhör FA-01 Runde 51), davon **3 zurückgestellt** (FA-08/09/10, Fahrer-Teil, ADR 0008). **FA-01 abgenommen 2026-09-23** — erster abgenommener Fall, Kreuzverhör Runde 51 (bepreiste Extra-Optionen je Größe, Notizfeld, strukturierte Adresse, bekannte Lieferorte, Zahlungsmöglichkeit, Großbestellungs-Schwelle, Ausnahmen 7b/9b/13a, Sprachen DE/EN; Nachträge in FA-03/05/06/12/20/22). 16 weitere Fälle mit Sirat durchgegangen (Runden 32–50). **FA-02/03/04** warten auf AP-001 (Rufumleitungs-Test, **2026-09-25**), danach nachziehen. Nächster Schritt: Kreuzverhör der übrigen durchgegangenen Fälle, Testszenario-Labels bereinigen (Befund A3) |
 
 ## Bauschritte
 
