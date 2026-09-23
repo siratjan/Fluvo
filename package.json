@@ -1,0 +1,31 @@
+{
+  "name": "fluvo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.6.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "vitest run --project unit",
+    "test:db": "vitest run --project db",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "depcruise": "depcruise apps packages --config .dependency-cruiser.cjs --exclude __fixtures__",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v && docker compose up -d --wait"
+  },
+  "devDependencies": {
+    "@fluvo/core": "workspace:*",
+    "@fluvo/db": "workspace:*",
+    "@fluvo/schemas": "workspace:*",
+    "@types/node": "^24.13.6",
+    "dependency-cruiser": "^18.4.0",
+    "drizzle-kit": "^0.31.11",
+    "prettier": "^3.9.9",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.1"
+  }
+}

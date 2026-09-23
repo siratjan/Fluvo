@@ -22,7 +22,7 @@ Seit 2026-09-23 (ADR [0014](decisions/0014-vorgehen-durchstich-spur.md), ersetzt
 | Stufe | Schritt | Status | Anmerkung |
 |---|---|---|---|
 | 0 | Fundament (Konzept, kein Code): Architekturbild mit Skalierungsaussage, K5-Ausschnitt Datenmodell, K3 Zustandsmodell als eine Seite | in Arbeit | Entwürfe vorhanden 2026-09-23: `konzept/modelle/architektur.md` (Architekturbild), K5-Ausschnitt (`konzept/modelle/er-durchstich.md`) und `konzept/modelle/zustand-bestellung.md` (K3). **Gegenlesen `architect`/`database-reviewer`/`compliance-guard` alle eingearbeitet.** Q13 (Zustandskette, ADR 0015) und die drei Datenklassen (ADR 0016) am 2026-09-23 von Sirat **entschieden**. Offen: **Durchgang Architekturbild mit Sirat**, Durchgang/Abnahme K3 und K5-Ausschnitt |
-| 1 | Kern als Code mit Tests aus den K1-Durchstich-Fällen (Zustandsmaschine, Preise, `createOrder`, Mandantentrennung, Event-Log) | offen | Code nur auf Ansage. AP-014 (Monorepo-Gerüst) und AP-015 (Kern-Durchstich) **vorgeschlagen**, Ansage steht aus |
+| 1 | Kern als Code mit Tests aus den K1-Durchstich-Fällen (Zustandsmaschine, Preise, `createOrder`, Mandantentrennung, Event-Log) | in Arbeit | Code nur auf Ansage. **AP-014 (Monorepo-Gerüst) fertig (geprüft) 2026-09-23** — Gerüst steht. AP-015 (Kern-Durchstich) **vorgeschlagen**, Code-Ansage steht aus |
 | 2 | Voice-Adapter gegen die Sandbox; K4 (Gesprächsdesign) entsteht im Bau | offen | Code nur auf Ansage; hängt an R1 |
 | 3 | Annahme minimal + Bon-Druck | offen | Code nur auf Ansage; hängt an R2 |
 | 4 | Zehn Testanrufe, danach Konzept an der Realität nachziehen | offen | Code nur auf Ansage |
@@ -43,7 +43,7 @@ Landkarte und Status je Artefakt in [konzept/README.md](konzept/README.md), je A
 | # | Schritt | Status | Anmerkung |
 |---|---|---|---|
 | 0 | Agentic Operating System (dieses Repo: Agenten, Skills, Hooks, Regeln, Doku) | fertig (geprüft) | 2026-09-18 |
-| 0b | Monorepo-Gerüst: pnpm-Workspace, TypeScript-Basis, Vitest, Prettier, dependency-cruiser-Regeln | offen | Erst auf Ansage und nach der Konzeptphase. pnpm ist noch nicht installiert |
+| 0b | Monorepo-Gerüst: pnpm-Workspace, TypeScript-Basis, Vitest, Prettier, dependency-cruiser-Regeln | fertig (geprüft) | **AP-014 abgeschlossen 2026-09-23:** pnpm-Monorepo (§5.1), Pakethüllen `core`/`schemas`/`db`/`apps/api`, Modulgrenz-Regeln (per Gegenprobe rot), lokale PostgreSQL (`postgis/postgis:17-3.5`) mit Rollen `fluvo_migrator`/`fluvo_app` ohne BYPASSRLS, Prüfkette an der Wurzel, `docs/entwicklung.md`. Nächster Bauschritt: **AP-015** (Kern-Durchstich `createOrder`), Ansage steht aus |
 | 1 | Kern: Tenant/Entitlements, Speisekarte, Bestellung, Zustandsmaschine, Event-Log, RLS, TSE-Grundgerüst im Datenmodell | offen | |
 | 2 | Basis: manuelle Annahme + Bon-Druck (CloudPRNT) inkl. Offline-Test | offen | hängt an R2 |
 | 3 | Anrufmanager KI: Retell an denselben Endpunkt, Function Calls, Metering, Eskalation | offen | hängt an R1 |

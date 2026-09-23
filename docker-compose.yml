@@ -1,0 +1,35 @@
+# Lokale Entwicklungs- und Test-Datenbank (PostgreSQL 17 + PostGIS).
+# Alle Zugangsdaten kommen aus der lokalen Umgebungsdatei im Repo-Wurzelordner (von Docker Compose
+# automatisch gelesen, nicht im Repo). Fehlt ein Wert, bricht `docker compose` sofort ab.
+name: fluvo
+
+services:
+  db:
+    # Fest gepinnt: Tag plus Digest, damit jeder Rechner dasselbe Image bekommt.
+    image: postgis/postgis:17-3.5@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6
+    restart: unless-stopped
+    environment:
+      # Superuser nur für die Ersteinrichtung im Container; die Anwendung nutzt ihn nie.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD fehlt in der lokalen Umgebungsdatei}
+      FLUVO_DB_NAME: ${PGDATABASE:?PGDATABASE fehlt in der lokalen Umgebungsdatei}
+      FLUVO_APP_USER: ${FLUVO_APP_USER:?FLUVO_APP_USER fehlt in der lokalen Umgebungsdatei}
+      FLUVO_APP_PASSWORD: ${FLUVO_APP_PASSWORD:?FLUVO_APP_PASSWORD fehlt in der lokalen Umgebungsdatei}
+      FLUVO_MIGRATOR_USER: ${FLUVO_MIGRATOR_USER:?FLUVO_MIGRATOR_USER fehlt in der lokalen Umgebungsdatei}
+      FLUVO_MIGRATOR_PASSWORD: ${FLUVO_MIGRATOR_PASSWORD:?FLUVO_MIGRATOR_PASSWORD fehlt in der lokalen Umgebungsdatei}
+    ports:
+      # Nur lokal erreichbar, nie im Netz.
+      - '127.0.0.1:${PGPORT:?PGPORT fehlt in der lokalen Umgebungsdatei}:5432'
+    volumes:
+      - fluvo-pgdata:/var/lib/postgresql/data
+      # Einzeldatei statt Ordner: das Image bringt dort sein eigenes PostGIS-Skript mit.
+      # Läuft nur beim ersten Start mit leerem Volume.
+      - ./docker/postgres/init/20-fluvo-roles.sh:/docker-entrypoint-initdb.d/20-fluvo-roles.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U postgres -d "$${FLUVO_DB_NAME}"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  fluvo-pgdata:

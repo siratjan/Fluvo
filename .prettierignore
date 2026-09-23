@@ -1,0 +1,16 @@
+# Bestehende Doku und Betriebssystem nicht umformatieren
+docs/
+.claude/
+tools/
+CLAUDE.md
+README.md
+
+# Generiertes / Fremdes
+node_modules/
+dist/
+build/
+coverage/
+pnpm-lock.yaml
+
+# Fixtures bewusst roh halten (absichtlich verbotene Importe)
+packages/modules/__fixtures__/

@@ -23,5 +23,5 @@ Als Board ansehen: `node tools/cockpit/server.mjs` → http://localhost:4777
 | [AP-011](AP-011-kontext-ausfaelle-rollen.md) | Konzept K9: Kontext und Datenfluss, Ausfall-Tabelle, Rollen und Rechte | vorgeschlagen | K9 | nein | 2026-09-18 |
 | [AP-012](AP-012-oberflaechen.md) | Konzept K10: Wireframes und Bon-Layout | vorgeschlagen | K10 | nein | 2026-09-18 |
 | [AP-013](AP-013-pilot-erfolgskriterien.md) | Konzept K11: Pilot-Erfolgskriterien und MVP-Schnitt | vorgeschlagen | K11 | nein | 2026-09-18 |
-| [AP-014](AP-014-monorepo-geruest.md) | Monorepo-Gerüst und lokale Entwicklungsumgebung | vorgeschlagen | 1 | ja — Ansage steht aus | 2026-09-23 |
+| [AP-014](AP-014-monorepo-geruest.md) | Monorepo-Gerüst und lokale Entwicklungsumgebung | fertig (geprüft) | 1 | ja — Ansage 2026-09-23 | 2026-09-23 |
 | [AP-015](AP-015-kern-durchstich.md) | Kern-Durchstich: createOrder, Zustandsmaschine, Event-Log, Mandantentrennung | vorgeschlagen | 1 | ja — Ansage steht aus | 2026-09-23 |

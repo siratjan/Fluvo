@@ -32,6 +32,21 @@ Tests zuerst (Pflichtbereiche laut `.claude/rules/testing.md`): Zustandsmaschine
 - [ ] Kein Modul-Import in `core`; `pnpm typecheck`, `pnpm test`, `pnpm depcruise` grün
 - [ ] Skills `fluvo-core-domain` und `fluvo-multi-tenant` an den gebauten Stand angepasst (Phase 6)
 
+## Vorgaben aus AP-014
+
+Beim Bau von AP-014 (2026-09-23) entstandene, an dieses Paket weitergereichte Auflagen. Als Checkliste beim Planen und Prüfen abzuhaken:
+
+- [ ] Je Tabelle in **derselben Migration**: `ENABLE` + `FORCE ROW LEVEL SECURITY`, Policy mit `current_setting('app.tenant_id')` **ohne** `missing_ok`, expliziter `GRANT` nur der nötigen Rechte an `fluvo_app` (keine DEFAULT PRIVILEGES); `order_events` nur `SELECT` und `INSERT`.
+- [ ] `withTenant` als **einziger** DB-Zugang; kein roher Pool-Export aus `packages/db`.
+- [ ] Zwei-Tenant-Test Pflicht je Tabelle und je Abfrage; die CI/Prüfkette muss `pnpm test:db` **wirklich aufrufen** (nicht stillschweigend überspringen).
+- [ ] Fastify-Logger erst mit Redaktion ohne Personendaten aktivieren.
+- [ ] Abdeckungswerkzeug `@vitest/coverage-v8` einführen (aus AP-014 verschoben) — **nach Rückfrage bei Sirat** (neue Abhängigkeit).
+- [ ] esbuild-Dev-Lücke (≤0.24.2, moderate, via drizzle-kit) beheben — per pnpm-`overrides` oder drizzle-kit-Update.
+- [ ] drizzle-kit lädt `.env` **nicht** selbst; die Variablen müssen in der Umgebung liegen (siehe `docs/entwicklung.md`, Abschnitt 4).
+- [ ] Optional: `REVOKE CONNECT` für `PUBLIC` auf den DBs `postgres` und `template_postgis`.
+- [ ] Optional: Migrator-Test um `rolcreatedb` ergänzen; Positivtest „`fluvo_app` darf `spatial_ref_sys` lesen".
+- Hinweis: `spatial_ref_sys` gehört `postgres`; eigene SRIDs einzutragen bräuchte den Superuser.
+
 ## Team
 
 | Reihenfolge | Agent / Skill | Wofür |

@@ -1,0 +1,8 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'packages/modules/*'
+allowBuilds:
+  esbuild: true
+minimumReleaseAgeExclude:
+  - prettier@3.9.9

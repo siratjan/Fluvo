@@ -44,6 +44,18 @@ create policy tenant_isolation on orders
 - `fluvo_migrator`: Eigentümer der Tabellen, nur für Migrationen.
 - `fluvo_app`: Laufzeitrolle. Kein `BYPASSRLS`, nicht Eigentümer, auf `order_events` nur `INSERT` und `SELECT`.
 
+### Rollen-Setup, wie es AP-014 anlegt (`docker/postgres/init/20-fluvo-roles.sh`)
+
+- `fluvo_migrator`: `LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS`. Eigentümer von DB und Schema `public`.
+- `fluvo_app`: `LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS NOINHERIT`. Nur `CONNECT` auf die DB und `USAGE` auf das Schema — **kein** `CREATE`, Eigentümer von nichts. `NOINHERIT`, damit die Rolle keine Rechte über etwaige Gruppenmitgliedschaften stillschweigend erbt.
+- PUBLIC-Rechte auf DB und Schema `public` sind entzogen (`REVOKE ALL … FROM PUBLIC`). Ausnahme: die PostGIS-Referenztabellen (`spatial_ref_sys`, `geometry_columns`, `geography_columns`) behalten bewusst ihr PUBLIC-`SELECT` — reine Nachschlagetabellen ohne Tenant und ohne Personenbezug.
+- **Bewusst keine `DEFAULT PRIVILEGES`.** Jede Migration vergibt die Tabellenrechte für `fluvo_app` selbst und exakt. So bekommt `order_events` nur `SELECT`/`INSERT` (append-only Event-Log, kein `UPDATE`/`DELETE`), statt dass eine Default-Regel pauschal Schreibrechte auf jede neue Tabelle streut.
+- `FORCE ROW LEVEL SECURITY` ist Pflicht, weil `fluvo_migrator` als Eigentümer sonst die Policy umginge (RLS gilt für den Eigentümer ohne `FORCE` nicht).
+
+### DB-Tests
+
+DB-Tests laufen **nur** über `pnpm test:db` gegen echtes PostgreSQL in Docker, verbunden als `fluvo_app` (nie Mock, nie Eigentümer-Rolle — sonst greift RLS nicht). Ohne erreichbare DB schlägt der Lauf **laut** fehl (kein stilles Überspringen). Start/Stopp/Reset der lokalen DB und die `.env`-Variablen: siehe `docs/entwicklung.md`.
+
 ## Woher kommt der Tenant?
 
 | Eingang | Quelle |
