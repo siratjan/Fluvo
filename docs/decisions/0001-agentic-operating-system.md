@@ -38,3 +38,5 @@ Agenten `tenant-isolation-guard`, `compliance-guard`, `voice-integrator`; alle a
 ## Wann neu bewerten
 
 Wenn ein zweiter Entwickler dazukommt, oder wenn ein ECC-Baustein fehlt, der mehrfach gebraucht wurde.
+
+**Nachtrag 2026-09-23:** Auf Sirats Ansage wurden Design-Bausteine aus ECC übernommen — zugeschnitten und auf Deutsch, mit Quellvermerk (MIT): Skills `fluvo-ui-design` (aus `frontend-design-direction`), `fluvo-accessibility` (aus `accessibility` + `frontend-a11y`), `fluvo-design-system` (aus `design-system`); Agenten `a11y-architect`, `react-reviewer`, `type-design-analyzer`. Einsatz ab Stufe 3 der Durchstich-Spur (Annahme-Tablet) bzw. bei AP-015 (Typen). Team jetzt 18 Agenten, 15 Skills.
