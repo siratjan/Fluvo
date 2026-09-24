@@ -1,26 +1,26 @@
 # K5 · Datenmodell (ER) für den Piloten-Durchstich
 
-- **Status:** Entwurf — Gegenlesen DB + Compliance 2026-09-23 eingearbeitet; Durchgang mit Sirat steht aus; offene Entscheidungen: siehe Fragen · **Paket:** AP-007 · **Skill:** `konzept-diagramme`
+- **Status:** Entwurf — Gegenlesen DB + Compliance 2026-09-23 eingearbeitet; **Datenklassen entschieden (ADR 0016); Runde 54 eingearbeitet (Options-/Varianten-Modell, keine geplanten Preise); Runde 55 eingearbeitet (variantenlose Artikel → jeder Artikel mind. eine Variante/Standardvariante, `base_price_cents` entfällt); Durchgang mit Sirat erfolgt (Runden 54–55)**; Kreuzverhör und Abnahme stehen aus; offene Entscheidungen: siehe Fragen · **Paket:** AP-007 · **Skill:** `konzept-diagramme`
 - **Zweck:** Zeigt die Tabellen, die der Durchstich **Anruf → Bestellung → Bon (+ Kassieren am Tresen)** braucht, mit ihren Beziehungen. Nur Schlüssel und tragende Felder stehen im Bild; jedes Feld mit Typ, Pflicht und Datenklasse steht im **Datenwörterbuch** ([../vertraege/datenwoerterbuch.md](../vertraege/datenwoerterbuch.md)).
 - **Maßgeblich ist die Wort-Tabelle** unter dem Bild. Laufen Bild und Tabelle auseinander, ist das ein Befund.
 
 > **Grenzen dieses Artefakts.** Konzipiert wird nur der Piloten-Durchstich. **Nicht Teil dieses Artefakts** (kommen später, unten als Liste): `drivers`, `driver_shifts`, `payments` (Teilzahlungen je Zahlart), `fiscal_transactions` (TSE), `domains`/Website. Die **Bestellzustände** werden hier **nicht** festgelegt — das macht K3 ([zustand-bestellung.md](zustand-bestellung.md), parallel). `orders.status` und `tenants.status` stehen deshalb nur als **Platzhalter**.
 >
 > **Regeln, die im ganzen Modell gelten** ([FEST], Briefing §5.2, CLAUDE.md 6/7/8):
-> - **Jede Tabelle trägt `tenant_id`** und hat Row-Level-Security (im Bild nur einmal erwähnt, sonst unlesbar). Bei der Übersetzung ist `tenant_id not null references tenants(id)` **und** die RLS-Policy je Tabelle in **derselben** Migration zu setzen — auch für alle Speisekarten-Tabellen (`menu_categories/items/options/variants`), wo `tenant_id` sonst nur per Konvention getragen wäre (DB 1.6).
+> - **Jede Tabelle trägt `tenant_id`** und hat Row-Level-Security (im Bild nur einmal erwähnt, sonst unlesbar). Bei der Übersetzung ist `tenant_id not null references tenants(id)` **und** die RLS-Policy je Tabelle in **derselben** Migration zu setzen — auch für alle Speisekarten-Tabellen (`menu_categories/items/options/variants/option_variant_prices`), wo `tenant_id` sonst nur per Konvention getragen wäre (DB 1.6).
 > - **Zusammengesetzte Fremdschlüssel `(tenant_id, id)`** als Konvention: Jeder Verweis innerhalb eines Tenants (`menu_id`, `category_id`, `item_id`, `order_id`, `customer_id`, `delivery_zone_id`, `shift_id`, `collected_by`, `known_place_id`, `device_id` …) referenziert zusammengesetzt `(tenant_id, id)` auf ein zusammengesetztes Unique/PK der Elterntabelle, damit keine FK-Kette auf einen fremden Tenant zeigt und RLS nicht umgangen wird (Skill `fluvo-multi-tenant`, DB 1.1). Im Bild sind FKs der Lesbarkeit halber einspaltig gezeichnet; maßgeblich ist die zusammengesetzte Form.
 > - **Je-Tenant-Eindeutigkeit statt globaler Serials:** `unique (tenant_id, order_number)` mit **je-Tenant-Zähler** (nie globaler Serial — verrät Fremdvolumen; DB 1.2) · `unique (tenant_id)` auf `menus` (DB 1.3) · `unique (tenant_id, idempotency_key)` auf `order_events` (partiell, wo gesetzt) und `voice_calls` (DB 2.2/3.1). **Ausnahme — tenant-agnostische Nachschlagschlüssel**, global eindeutig, weil sie *vor* gesetztem Tenant gelesen werden: `devices.token_hash`, `voice_calls.provider_call_id` und die Zuordnung `phone_numbers`/`voice_agents` (Anbieter-ID → Tenant). Diese Lookups leiten den Tenant ab und betreten dann `withTenant` — **kein `BYPASSRLS`** (DB 1.4/1.5).
 > - **Geld immer als Ganzzahl in Cent** (Typname `Cents`). Rundung an **einer** Stelle im Kern, Währung EUR als Annahme (Single-Currency; DB 4.3).
 > - **Zeitpunkte in UTC**, Anzeige in der Zeitzone des Restaurants. Diese Zeitzone steht als `tenants.timezone` (IANA, z. B. Europe/Berlin) und trägt jede Tagesgrenze, Öffnungsprüfung, Vorbestellung und den Tagesabschluss (DB 6.1).
 > - **`order_events` und Kassendaten sind append-only** — nie `UPDATE`/`DELETE` (GoBD-Audit-Trail). Der Verarbeitungs-/Dispatch-Zustand des In-Process-Verteilers liegt deshalb in einer **eigenen** Tabelle `event_dispatch` (Outbox-Cursor); `order_events` bleibt reines INSERT/SELECT (DB 2.3). `order_events` trägt eine **Sequenz** `seq` je Bestellung, damit die Reihenfolge nie allein an `occurred_at` hängt (DB 2.1).
 > - **Kein Audio, kein dauerhaftes Volltranskript**, keine Personendaten in Event-Nutzlasten. Freitextfelder (`note`, `driver_hint`, `cash_settlements.comment`/`discrepancy_reason`, `closures.note`) gelangen **nie** in `order_events`, Logs, Sentry, Fehlermeldungen, URLs oder an den Voice-Anbieter (DB C B4/B10).
-> - **Zwei Datenklassen** aus Briefing §5.2, hier um eine dritte (rein betriebliche) ergänzt, damit Stammdaten nicht fälschlich als Buchungsdaten gelten:
+> - **Drei Datenklassen** (ADR 0016, entschieden 2026-09-23): die zwei aus Briefing §5.2, um eine dritte (rein betriebliche) ergänzt, damit Stammdaten nicht fälschlich als Buchungsdaten gelten:
 >   - **(a) DSGVO-löschbar** — Kundenstamm, Rufnummer, Adresse, Freitext.
 >   - **(b) GoBD-pflichtig, 10 Jahre** — Bestellung, Positionen, Events, Kassenabschluss. **Enthält keinen Personenbezug, nur Verweise.**
 >   - **(c) betrieblich** — Speisekarte, Zonen, Öffnungszeiten, Geräte. Kein Personenbezug eines Kunden, keine Buchung.
 >   - **Löschung = ganze personenbezogene Zeile entfernen, der Beleg bleibt** (Briefing §5.2). Deshalb liegen die personenbezogenen Felder einer Bestellung in einer **eigenen** Tabelle (`order_customer_details`, Klasse a), getrennt von der Bestellung selbst (`orders`, Klasse b). Der Löschweg ist **Zeile löschen** (nicht in-place pseudonymisieren), damit NOT-NULL-Felder konsistent bleiben; `orders.customer_id`-Bezug entfällt mit `ON DELETE SET NULL` (DB 5.2, C-Antwort 2).
 >
-> **Frage an Sirat / architect (C B1):** Die dritte Datenklasse **(c) betrieblich** weicht von Briefing §5.2 (zwei Klassen) ab; open-questions Q10 hält die Abweichung als „nicht entschieden" fest. Vor der ersten Migration durch `architect` + Sirat freigeben. Die K5-Lesart (c) = Speisekarte/Zonen/Geräte, **ohne** Kundenbezug oder Buchung — nicht zu vermischen mit einem Vorschlag „Kundenstamm/Lieferdaten/Fiskaldaten".
+> **Entschieden (C B1, ADR 0016, 2026-09-23):** Die dritte Datenklasse **(c) betrieblich** ist **freigegeben** (Sirat, Runde 52) — dokumentierte Abweichung/Ergänzung zu Briefing §5.2 (zwei Klassen), siehe [ADR 0016](../../decisions/0016-drei-datenklassen.md). K5-Lesart (c) = Speisekarte/Zonen/Geräte/Tenant-Einstellungen, **ohne** Kundenbezug oder Buchung — nicht zu vermischen mit dem ADR-0007-Vorschlag „Kundenstamm/Lieferdaten/Fiskaldaten". Beschäftigtendaten (`users`, `staff_shifts`, `cash_settlements` je Mitarbeiter) sind **nicht** (c) und nicht der Kundenlöschung unterworfen. Die konkreten **Fristen** bleiben offen (Anwalt A1–A6).
 
 ## Diagramm 1 — Stammdaten (Restaurant, Speisekarte, Zonen, Kunden)
 
@@ -33,7 +33,9 @@ erDiagram
   MENUS ||--o{ MENU_CATEGORIES : "gliedert in"
   MENU_CATEGORIES ||--o{ MENU_ITEMS : "enthaelt"
   MENU_ITEMS ||--o{ MENU_OPTIONS : "hat Extras"
-  MENU_ITEMS ||--o{ MENU_ITEM_VARIANTS : "hat Groessen (OFFEN)"
+  MENU_ITEMS ||--|{ MENU_ITEM_VARIANTS : "hat mind. 1 Variante (ohne Groesse: Standardvariante)"
+  MENU_OPTIONS ||--o{ MENU_OPTION_VARIANT_PRICES : "Aufpreis je Variante"
+  MENU_ITEM_VARIANTS ||--o{ MENU_OPTION_VARIANT_PRICES : "Aufpreis je Extra"
   TENANTS ||--o{ DELIVERY_ZONES : "hat Zonen"
   TENANTS ||--o{ KNOWN_DELIVERY_PLACES : "kennt Orte"
   DELIVERY_ZONES ||--o{ KNOWN_DELIVERY_PLACES : "liegt in Zone"
@@ -91,25 +93,29 @@ erDiagram
     uuid tenant_id FK
     uuid category_id FK
     text name
-    int base_price_cents "Pflicht"
     text tax_rate
     text allergens "LMIV"
     bool available "momentan aus"
-    date price_valid_from "gueltig ab"
   }
   MENU_OPTIONS {
     uuid id PK
     uuid tenant_id FK
     uuid item_id FK
     text name "z.B. extra Zwiebeln"
-    int surcharge_cents "Aufpreis (OFFEN: je Groesse)"
   }
   MENU_ITEM_VARIANTS {
     uuid id PK
     uuid tenant_id FK
     uuid item_id FK
-    text name "klein | gross (OFFEN)"
-    int price_cents
+    text name "klein | gross"
+    int price_cents "Preis in dieser Groesse"
+  }
+  MENU_OPTION_VARIANT_PRICES {
+    uuid id PK
+    uuid tenant_id FK
+    uuid option_id FK
+    uuid variant_id FK
+    int surcharge_cents "Aufpreis je Extra je Variante"
   }
   DELIVERY_ZONES {
     uuid id PK
@@ -229,11 +235,12 @@ erDiagram
     uuid tenant_id FK
     uuid order_id FK
     text item_name_snapshot "eingefroren"
+    text variant_name_snapshot "gewaehlte Groesse, eingefroren"
     int quantity
     int unit_price_cents "eingefroren, BRUTTO [VORSCHLAG]"
     text tax_rate "eingefroren"
     int tax_cents "enthaltene USt je Position [VORSCHLAG]"
-    jsonb options_snapshot "Extras: name + surcharge_cents, eingefroren"
+    jsonb options_snapshot "Extras: name + surcharge_cents (je Variante aufgeloest), eingefroren"
     int line_total_cents
   }
   ORDER_EVENTS {
@@ -311,9 +318,10 @@ Kurz und in Alltagssprache. `K` = Datenklasse (a/b/c, siehe oben). Details je Fe
 | `devices` | Die angemeldeten Geräte des Restaurants: Annahme-Tablet, Drucker, registriertes Inhaber-Handy. `last_seen_at` erlaubt dem Server zu merken, wenn das Annahme-Gerät offline ist (dann pausiert die KI, ADR 0013). | c | FA-14, FA-16, FA-19, FA-20 |
 | `menus` | Die eine Speisekarte des Restaurants (genau eine Wahrheit). Trägt eine Versionsnummer, damit KI-Prompt und Offline-Cache wissen, ob sie neu laden müssen. | c | FA-12, [FEST 3/9] |
 | `menu_categories` | Die Rubriken der Karte (z. B. „Pizza", „Getränke"). | c | FA-12 |
-| `menu_items` | Ein Gericht auf der Karte: Name, Preis (Pflicht — ohne Preis wird nichts angelegt), Steuersatz, Allergene, ob es gerade verfügbar ist („momentan aus"), und ab wann ein geänderter Preis gilt. | c | FA-12 |
-| `menu_options` | Bepreiste Extras zu einem Gericht („extra Zwiebeln"). Der Aufpreis **hängt von der Größe/Variante ab** — wie genau das hinterlegt wird, ist **offen** (siehe Fragen). | c | FA-12, FA-01 (Runde 51) |
-| `menu_item_variants` | Größen/Varianten eines Gerichts (z. B. „klein"/„groß"). **Nur als Platzhalter — offen**, ob und wie Varianten modelliert werden. | c | FA-12 (Runde 51) — **OFFEN** |
+| `menu_items` | Ein Gericht auf der Karte: Name, Steuersatz, Allergene, ob es gerade verfügbar ist („momentan aus"). **Trägt selbst keinen Preis mehr** — der Preis hängt **immer** an einer Variante (`menu_item_variants.price_cents`); `base_price_cents` ist **entfernt**, weil es sonst eine zweite Preis-Wahrheit neben der Variante wäre ([FEST 9] „eine Speisekarte"; [ENTSCHIEDEN Sirat 2026-09-23], Runde 55). Ohne Preis wird nichts angelegt — der Preis kommt jetzt von der (Standard-)Variante. **Kein „gültig ab"-Feld** — Preisänderungen gelten ab dem Speichern (Runde 54). | c | FA-12 |
+| `menu_options` | Extras zu einem Gericht („extra Zwiebeln"). **Trägt selbst keinen Preis** — der Aufpreis hängt von der Größe/Variante ab und steht je Paar (Extra × Variante) in `menu_option_variant_prices` ([ENTSCHIEDEN Sirat 2026-09-23], Runde 54/55). | c | FA-12, FA-01 (Runde 51) |
+| `menu_item_variants` | Größen/Varianten eines Gerichts (z. B. „klein"/„groß") mit **eigenem Preis je Größe** (`price_cents`). **Jeder Artikel hat mindestens eine Variante**; ein Artikel **ohne Größe** (z. B. Getränk, Salat) bekommt **genau eine Standardvariante** — eine einheitliche Regel ohne Sonderfall ([ENTSCHIEDEN Sirat 2026-09-23], Runde 55). Der Artikelpreis kommt **immer** aus der gewählten (bzw. der Standard-)Variante. **Invariante:** mind. eine Variante je aktivem Artikel, im Kern beim Speichern durchgesetzt (`createMenuItem`/Update legt bei fehlender Größe automatisch die Standardvariante an; siehe DB-Invariante unten). | c | FA-12 (Runde 54/55) |
+| `menu_option_variant_prices` | Der **Aufpreis eines Extras je Variante** (Beispiel: extra Zwiebel kostet auf der kleinen Pizza anders als auf der großen). Ein Satz je Paar (`option_id`, `variant_id`) mit `surcharge_cents` (Ganzzahl). **Kein Faktor, keine Staffel** — ein direkter Wert je Paar ([ENTSCHIEDEN Sirat 2026-09-23], Runde 54). Weil jeder Artikel mindestens eine Variante hat, hängt der Extra-Aufpreis **immer** an einer Variante — auch bei variantenlosen Artikeln (dort an der Standardvariante), ohne Sonderfall. Der **Server** rechnet damit; `createOrder` friert den zutreffenden Aufpreis in `order_items.options_snapshot` ein. | c | FA-12 (Runde 54/55), FA-01 |
 | `delivery_zones` | Die Lieferzonen (als Ortsteile beschrieben). Jede Zone trägt drei Werte: Lieferzeit, Liefergebühr, Mindestbestellwert (auf den Warenwert). Das Modell nutzt **bewusst kein** PostGIS-Polygon: Zuordnung Adresse→Ortsteil per Geocoder (Q6) — begründete Abweichung von der generischen „ST_Contains/GiST"-Regel, konsistent mit FA-17 B18 (Sirats Entscheidung „nicht als gezeichnete Fläche"), kein Versäumnis (DB 8.1). | c | FA-17 |
 | `known_delivery_places` | Orte, die Anrufer nennen statt einer Straße („Firma Soundso", „am See wie immer"). Trägt Name, Zone und einen Fahrer-Hinweis. **Kann Personenbezug tragen** (Firmenname, Fahrer-Hinweis) — hat aber **keinen** Rufnummern-Bezug, deshalb müssen Auskunft/Löschung diese Tabelle über Namens-/Freitextsuche ausdrücklich erfassen (C B8). `driver_hint` gelangt nie in Events/Logs/URLs/an den Voice-Anbieter (C B10). Löschfrist/-schlüssel offen → Frage A3 (C B9). | a | FA-24 |
 | `opening_hours` | Die Öffnungszeiten je Wochentag — mit **mehreren Zeitfenstern** je Tag (Mittagspause). | c | FA-18 |
@@ -323,7 +331,7 @@ Kurz und in Alltagssprache. `K` = Datenklasse (a/b/c, siehe oben). Details je Fe
 | `customer_addresses` | Die gemerkte(n) Adresse(n) eines Stammkunden, strukturiert (Straße, Hausnummer, PLZ, Ortsteil, Stockwerk) — oder statt einer Adresse ein bekannter Lieferort. | a | FA-01, FA-24 |
 | `orders` | Eine Bestellung — **ohne** die personenbezogenen Felder. Trägt Bestellart, Zustand (→ K3), Vorbestellung ja/nein, Zone, die vom Server gerechneten Summen und die Tresen-Barerfassung. `shift_id` und `collected_at` binden das Kassieren an die Schicht, damit der Abschluss je Mitarbeiter ohne Zeitfenster-Join sauber summiert (DB 7.2). Bestellnummer ist je Restaurant eindeutig und wird per Je-Tenant-Zähler vergeben (DB 1.2). Felder für Fahrer und Zahlart sind da, bleiben im Piloten leer (ADR 0008). | b | FA-01, FA-05, FA-11, FA-15 |
 | `order_customer_details` | Die personenbezogenen Felder **einer** Bestellung: Name, Rufnummer, Lieferadresse, Notiz. **Getrennt von `orders`**, damit die Löschung (ganze Zeile) genau hier greift und der Beleg bleibt. `contact_phone` kann **ohne** `customers`-Zeile existieren (Kunde sagte „Nein") — Auskunft/Löschung per Rufnummer müssen diese Tabelle direkt erfassen (C B8). `note` gelangt nie in Events/Logs/Sentry/URLs/an den Voice-Anbieter, nur auf Bon und an Küche/Fahrer; die KI erfragt keine Gesundheitsdaten (C B10, → K4). | a | FA-01, FA-05 (Runde 51) |
-| `order_items` | Die Positionen einer Bestellung, mit **eingefrorenem** Artikeltext, Einzelpreis, Steuersatz und gewählten Extras. Preis ist **brutto** (Gastro-üblich) und je Position wird der enthaltene Steuerbetrag (`tax_cents`) mitgeführt, damit die USt-Aufteilung je Satz für Beleg/GoBD/DSFinV-K nachrechenbar ist — als **[VORSCHLAG]**, Brutto/Netto-Festlegung ist eine Steuerberaterin-Frage (DB 4.1, S-Frage). `options_snapshot` folgt einem festen Schema (`name`, `surcharge_cents`), damit `line_total = (unit_price + Σ surcharge) × quantity` prüfbar bleibt (DB 4.2). Hängen nie an der aktuellen Karte. | b | FA-01, §5.2 |
+| `order_items` | Die Positionen einer Bestellung, mit **eingefrorenem** Artikeltext, **gewählter Größe/Variante** (`variant_name_snapshot`), Einzelpreis, Steuersatz und gewählten Extras. Der Einzelpreis ist **immer** der Preis der gewählten Variante (bei variantenlosen Artikeln der Standardvariante — kein `base_price_cents` mehr). Preis ist **brutto** (Gastro-üblich) und je Position wird der enthaltene Steuerbetrag (`tax_cents`) mitgeführt, damit die USt-Aufteilung je Satz für Beleg/GoBD/DSFinV-K nachrechenbar ist — als **[VORSCHLAG]**, Brutto/Netto-Festlegung ist eine Steuerberaterin-Frage (DB 4.1, S1). `options_snapshot` folgt einem festen Schema (`name`, `surcharge_cents` — der je gewählter Variante aufgelöste Aufpreis aus `menu_option_variant_prices`), damit `line_total = (unit_price + Σ surcharge) × quantity` prüfbar bleibt (DB 4.2). Hängen nie an der aktuellen Karte. | b | FA-01, §5.2 |
 | `order_events` | Das unveränderliche Ereignisprotokoll: angelegt, quittiert, geändert, storniert (mit Grund), kassiert, abgeschlossen sowie der **Einwilligungs-Nachweis** (`consent.recorded`/`consent.revoked`, siehe unten). Trägt eine Sequenz `seq` je Bestellung (deterministische Ordnung), einen je Tenant eindeutigen `idempotency_key` (wo gesetzt) und `actor` als reine ID. **Append-only, ohne Personendaten** — der GoBD-Audit-Trail und das Inhaber-Log. Der Verteil-/Dispatch-Zustand liegt getrennt in `event_dispatch`. | b | alle FA, [FEST 7] |
 | `event_dispatch` | Der Verarbeitungs-Zustand des In-Process-Verteilers je Event (pending/dispatched). **Getrennt** von `order_events`, weil `fluvo_app` dort nur INSERT/SELECT darf und die Outbox einen Cursor braucht (DB 2.3). | c | K6, [FEST 7] |
 | `voice_agents` | Zuordnung Voice-Anbieter-ID / Rufnummer → Restaurant. Der eingehende Voice-Webhook löst darüber den Tenant auf, **bevor** ein `voice_calls`-Satz existiert. Lookup-Schlüssel sind **global eindeutig** und werden tenant-agnostisch gelesen (kein `BYPASSRLS`, DB 1.5). | c | FA-01, `fluvo-multi-tenant` |
@@ -357,7 +365,9 @@ Als Verweise mitgedacht, aber **nicht** für den ersten Piloten modelliert:
 
 ## Offene Fragen
 
-> **Frage an Sirat (Options-/Varianten-Modell, FA-12 Runde 51):** Extra-Zutaten sind bepreiste Optionen mit **größen-/variantenabhängigem Aufpreis** (Beispiel: kleine Pizza, extra Zwiebel = 50 Cent). Wie wird das hinterlegt — **eine `menu_item_variants`-Tabelle (Größen)** mit **je Variante eigenem Aufpreis je Extra**, oder eine **Faktor-/Staffelregel**? Davon hängt ab, ob `menu_options.surcharge_cents` ein fester Wert bleibt oder je Variante existiert. → offen, wird in FA-12/K5 vertieft.
+> **Entschieden (Options-/Varianten-Modell, Sirat Runde 54, 2026-09-23):** Größen/Varianten je Artikel liegen in `menu_item_variants` (mit eigenem `price_cents`), und der Aufpreis je Extra je Variante liegt als **direkter Wert** in `menu_option_variant_prices` (`option_id`, `variant_id`, `surcharge_cents`) — **kein Faktor, keine Staffel** (Beispiel: extra Zwiebel auf der kleinen Pizza kostet anders als auf der großen). `menu_options` trägt keinen `surcharge_cents` mehr. `createOrder` friert die gewählte Variante und die je Variante aufgelösten Aufpreise in `order_items` ein. Damit ist die frühere offene Frage aus FA-12 Runde 51 geschlossen.
+>
+> **Entschieden (variantenlose Artikel, Sirat Runde 55, 2026-09-23):** Es gibt **beides** — Artikel mit Größen und Artikel mit nur einem Preis (z. B. Getränke, Salat), die trotzdem Extras mit Aufpreis haben können. Umsetzung ohne Sonderfall: **Jeder Artikel hat mindestens eine Variante**; ein Artikel **ohne Größe** bekommt **genau eine Standardvariante**. Der Extra-Aufpreis hängt damit **immer** an einer Variante (`menu_option_variant_prices`) — auch bei variantenlosen Artikeln (an der Standardvariante). Daraus folgt: **`menu_items.base_price_cents` entfällt** — der Preis kommt immer von der Variante, ein Grundpreis am Artikel wäre eine zweite Wahrheit (Regel 9 „eine Speisekarte"). **DB-Invariante:** mind. eine Variante je aktivem Artikel, **im Kern beim Speichern durchgesetzt** (`createMenuItem`/Update legt bei fehlender Größe automatisch die Standardvariante an; zusätzlich als CHECK/Trigger absicherbar). Die frühere Restfrage ist damit geschlossen. *Nicht Teil dieser Aufgabe:* die Anzeige der Standardvariante in der Oberfläche (ohne Größennamen) — Hinweis für K10.
 
 > **Frage an den Anwalt (Q10 / A3, C B9): Löschfrist und Datenklasse `known_delivery_places` (FA-24).** Ein bekannter Lieferort kann Personenbezug tragen (Firmenname, Kundenbezeichnung, Fahrer-Hinweis mit Namen) und hat **keinen** Rufnummern-Bezug, an dem ein Löschjob ansetzen könnte. Hier vorläufig **(a)** eingeordnet. Welche Datenklasse und Löschfrist gelten — Stammdaten mit dokumentierter Aufbewahrung oder Nutzungszeitpunkt (`last_used_at`) ergänzen? (In Runde 51 nicht entschieden.)
 
@@ -367,12 +377,12 @@ Als Verweise mitgedacht, aber **nicht** für den ersten Piloten modelliert:
 
 > **Frage an den Anwalt (A5, C B3): Aufbewahrung von Beschäftigtendaten** (`users`, `staff_shifts`, `cash_settlements` je Mitarbeiter) — abgegrenzt von der Kundenlöschung (§ 26 BDSG).
 
-> **Frage an Sirat / architect: „Gültig ab"-Preis in der Zukunft (FA-12).** `menu_items.price_valid_from` trägt **einen** Stichtag. Ein **künftig geplanter** Preis (heute alt, ab Datum X neu) braucht entweder eine Preis-Historie/`menu_item_scheduled_prices` oder einen geplanten Änderungssatz. Hier noch nicht modelliert → K5/K6.
+> **Entschieden (geplante Preisänderung, Sirat Runde 54, 2026-09-23):** Im Piloten gibt es **keine** in der Zukunft geplanten Preise. Eine Preisänderung gilt **ab dem Speichern**; bereits aufgenommene Bestellungen frieren ihren Preis ohnehin ein. `menu_items.price_valid_from` **entfällt** (nicht mehr im Modell) — es trüge nur einen Stichtag, der ohne Zukunftspreise keine Wirkung hätte. Eine Preis-Historie/`menu_item_scheduled_prices` ist als **späterer Ausbau** vermerkt (nicht im Durchstich).
 
-> **Frage an die Steuerberaterin (DB 4.1 / S1, ergänzend):** Ist der eingefrorene Positionspreis **brutto** (im Modell als [VORSCHLAG] so gesetzt) und genügt es, den enthaltenen Steuerbetrag je Position (`tax_cents`) zu speichern — oder verlangt DSFinV-K die Netto-Führung bzw. eine andere Aufteilung? Erst nach Antwort wird das [VORSCHLAG] verbindlich; die Zeilen sind danach unveränderlich.
+> **Frage an die Steuerberaterin (DB 4.1 / S1, ergänzend):** Ist der eingefrorene Positionspreis **brutto** (im Modell als [VORSCHLAG] so gesetzt) und genügt es, den enthaltenen Steuerbetrag je Position (`tax_cents`) zu speichern — oder verlangt DSFinV-K die Netto-Führung bzw. eine andere Aufteilung? **Bis zur Antwort wird mit brutto + `tax_cents` gebaut; vor dem ersten echten Einsatz muss die Antwort vorliegen, danach sind die Positionen unveränderlich.**
 
 > **Frage an die Steuerberaterin (C B13 / S2):** Darf eine als Test markierte Bestellung (`orders.is_test`) an die TSE, oder muss sie fiskalisch außen vor bleiben? → Q2.
 
-> **Frage an Sirat / architect (C B1):** Freigabe der dritten Datenklasse (c) — siehe Regelblock oben.
+> **Entschieden (C B1):** Freigabe der dritten Datenklasse (c) — [ADR 0016](../../decisions/0016-drei-datenklassen.md), siehe Regelblock oben. Nur noch die konkreten Fristen (Anwalt A1–A6) sind offen.
 
 > **Modellentscheidung (technisch, [STACK], nicht Produktwahrheit):** Tresen-Barzahlung im Piloten als Felder an `orders` (`collected_by`, `collected_cash_cents`, `collected_voucher_cents`) statt als generische `payments`-Tabelle. Grund: Teilzahlungen je Zahlart, Karte, online und Fahrer kommen erst später (ADR 0008). Ob das so bleibt oder früh auf eine `payments`-Tabelle umgestellt wird, klärt K6 zusammen mit Q2 (Steuerberaterin, DSFinV-K).

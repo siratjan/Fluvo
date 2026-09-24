@@ -12,12 +12,14 @@ Der Kern ist das einzige, was Bestellungen anlegt und ihren Status ändert. Modu
 Im **Piloten** (ADR 0015, reduzierte Kette): `received` ist der einzige Vor-Endzustand, die Küchen- und Fahrer-Zustände werden nicht von Hand gesetzt.
 
 ```
-received → delivered      (Lieferung: Annahme drückt „geliefert", keine Zahlart im System — ADR 0008)
+received → delivered      (Lieferung: Annahme drückt „geliefert", keine Zahlart im System — ADR 0008; terminal, KEIN „Abgerechnet" im Piloten)
          → handed_over    (Abholung/Mitnehmen: am Tresen übergeben und bezahlt)
-         → ended_unpaid   (nie abgeholt/nie kassiert, Pflichtgrund — [VORSCHLAG] bis Q3)
+         → ended_unpaid   (nie abgeholt/nie kassiert, Pflichtgrund — entschiedener Endzustand, Runde 53)
          → cancelled      (Storno-Pfad, mit Grund und Akteur)
 delivered / handed_over → cancelled   (Storno aus dem Endzustand — nur Inhaber)
 ```
+
+`ended_unpaid` ist im Piloten ein **entschiedener eigener Endzustand** (ADR 0015 Nachtrag, Runde 53), kein Storno mit Grund — wirtschaftlich verschieden (Schwund vs. Annullierung), eigenes append-only Ereignis `order.ended_unpaid`; die **fiskalische** Behandlung bleibt [OFFEN] → Q3. `delivered` ist im Piloten **terminal** — es folgt **kein „Abgerechnet"**; der Zustand `settled` wird erst mit der Fahrer-App später **zwischen** `received` und die Enden eingeschoben (siehe unten).
 
 Die vollen Zustände `in_kitchen`, `ready`, `out_for_delivery`, `settled` (Briefing §5.3: Eingegangen → In Küche → Fertig → Unterwegs → Geliefert → Abgerechnet) sind **später zwischen `received` und `delivered` einschiebbar**, ohne Daten-Rückbau: Das Event-Log protokolliert Tatsachen, nicht den Graphen ([FEST 7]). Ereignisnamen bleiben bedeutungsstabil.
 
@@ -41,6 +43,8 @@ const transitions = {
 const TERMINAL_STATES = ['delivered', 'handed_over', 'ended_unpaid', 'cancelled'] as const;
 const OPEN_STATES = allStatuses.filter((s) => !TERMINAL_STATES.includes(s));
 ```
+
+**Tagesabschluss blockiert bei offenen Bestellungen** (ADR 0015 Nachtrag, Runde 55, Q31): Der Tagesabschluss (FA-16) ist gesperrt, solange noch eine Bestellung in einem `OPEN_STATES`-Zustand (`received`) steht; er wird erst möglich, wenn **jede** offene Bestellung bewusst beendet wurde (`delivered` / `handed_over` / `ended_unpaid` / `cancelled`, jeweils mit den bestehenden Rechten und Pflichtgründen). Das System ändert **keinen** Status automatisch (kein stilles Schließen). Die offene Menge immer über `OPEN_STATES` ableiten, nie über `status = 'received'` verdrahten.
 
 Regeln:
 - Nur der Server wendet Übergänge an. Clients senden Absichten („geliefert"), keine Zustände. Die KI löst nie einen Statusübergang aus — sie ruft nur `createOrder` nach Bestätigung auf.

@@ -1,14 +1,14 @@
 # K5 · Datenwörterbuch für den Piloten-Durchstich
 
-- **Status:** Entwurf — Gegenlesen DB + Compliance 2026-09-23 eingearbeitet; Durchgang mit Sirat steht aus; offene Entscheidungen: siehe Fragen · **Paket:** AP-007 · **Skill:** `konzept-vertraege`
+- **Status:** Entwurf — Gegenlesen DB + Compliance 2026-09-23 eingearbeitet; **Datenklassen entschieden (ADR 0016); Runde 54 eingearbeitet (Options-/Varianten-Modell, keine geplanten Preise); Runde 55 eingearbeitet (variantenlose Artikel → jeder Artikel mind. eine Variante/Standardvariante, `base_price_cents` entfällt); Durchgang mit Sirat erfolgt (Runden 54–55)**; Kreuzverhör und Abnahme stehen aus; offene Entscheidungen: siehe Fragen · **Paket:** AP-007 · **Skill:** `konzept-vertraege`
 - **Zweck:** Je Tabelle jedes Feld mit Typ, Pflicht, **Datenklasse** und Herkunft. Gehört zum ER-Diagramm ([../modelle/er-durchstich.md](../modelle/er-durchstich.md)); dort stehen Beziehungen und Kardinalitäten.
 - **Maßgeblich in der Konzeptphase ist diese Datei.** Sobald Code entsteht, wird daraus ein Zod-Schema in `packages/schemas`; ab dann ist das Schema maßgeblich und diese Datei verweist nur darauf. Nie beides pflegen.
 
 ## Konventionen
 
 - **Typen (fachlich):** `Kennung` (ID, technisch UUID) · `Text` · `Cents` (Ganzzahl in Cent, [FEST]) · `Zahl` · `Ja/Nein` · `Zeitpunkt` (UTC, [STACK]) · `Datum` · `Uhrzeit` · `Dauer` (Sekunden/Minuten) · `Status-Liste` (String-Literal-Union aus dem Schema, keine freien Strings) · `JSON`.
-- **Datenklasse:** **(a)** DSGVO-löschbar · **(b)** GoBD-pflichtig, 10 Jahre, ohne Personenbezug · **(c)** betrieblich. Löschung = **ganze personenbezogene Zeile löschen** (nicht in-place pseudonymisieren), der Beleg (b) bleibt (Briefing §5.2, DB 5.2/C-Antwort 2). **Die dritte Klasse (c) weicht von Briefing §5.2 ab und ist noch nicht freigegeben → Frage an Sirat/architect (C B1), siehe Fragen.**
-- **`tenant_id`** (Kennung, Pflicht) trägt **jede** Tabelle mit Verweis auf `tenants(id)`; unten nur dort einzeln genannt, wo es der Klarheit dient. Klasse folgt der Tabelle. Bei der Übersetzung wird `tenant_id not null` **und** die RLS-Policy je Tabelle in **derselben** Migration gesetzt — ausdrücklich auch in `menu_categories/items/options/variants` (DB 1.6).
+- **Datenklasse:** **(a)** DSGVO-löschbar · **(b)** GoBD-pflichtig, 10 Jahre, ohne Personenbezug · **(c)** betrieblich. Löschung = **ganze personenbezogene Zeile löschen** (nicht in-place pseudonymisieren), der Beleg (b) bleibt (Briefing §5.2, DB 5.2/C-Antwort 2). **Die dritte Klasse (c) ist entschieden ([ADR 0016](../../decisions/0016-drei-datenklassen.md), 2026-09-23 — dokumentierte Abweichung/Ergänzung zu Briefing §5.2);** nur die konkreten Fristen bleiben offen (Anwalt A1–A6).
+- **`tenant_id`** (Kennung, Pflicht) trägt **jede** Tabelle mit Verweis auf `tenants(id)`; unten nur dort einzeln genannt, wo es der Klarheit dient. Klasse folgt der Tabelle. Bei der Übersetzung wird `tenant_id not null` **und** die RLS-Policy je Tabelle in **derselben** Migration gesetzt — ausdrücklich auch in `menu_categories/items/options/variants/option_variant_prices` (DB 1.6).
 - **Fremdschlüssel:** Jede `Kennung`, die auf eine andere Tabelle desselben Tenants verweist (`menu_id`, `category_id`, `item_id`, `order_id`, `customer_id`, `zone_id`, `shift_id`, `device_id`, `collected_by`, `known_place_id` …), referenziert **zusammengesetzt `(tenant_id, id)`** auf ein zusammengesetztes Unique/PK der Elterntabelle (Skill `fluvo-multi-tenant`, DB 1.1). Ausnahme: die tenant-agnostischen Lookup-Schlüssel (`devices.token_hash`, `voice_calls.provider_call_id`, `voice_agents`), die **global** eindeutig sind (DB 1.4/1.5).
 - **Geld:** `Cents` (Ganzzahl). Rundung an **einer** Stelle im Kern; Währung EUR als Annahme (Single-Currency, DB 4.3).
 - **Bestellzustände** werden hier **nicht** festgelegt — `orders.status` und `tenants.status` sind Platzhalter, Verweis auf **K3** ([../modelle/zustand-bestellung.md](../modelle/zustand-bestellung.md)).
@@ -98,25 +98,49 @@
 | `category_id` | Kennung | ja | c | FA-12 | — |
 | `name` | Text | ja | c | FA-12 | Wird bei Bestellung in `order_items` **eingefroren**. |
 | `description` | Text | nein | c | FA-12 | — |
-| `base_price_cents` | Cents | ja | c | FA-12 (Runde 47) | **Pflicht** — ohne Preis wird kein Artikel angelegt. |
 | `tax_rate` | Status-Liste | ja | c | Briefing §5.2, FA-12 | Steuersatz je Artikel (LMIV/Steuer). Nur Inhaber ändert, mit Warnung + Protokoll. Wertliste offen (Steuersätze DE). |
 | `allergens` | JSON | nein | c | Briefing §5.2, FA-12 | Allergen-Kennzeichnung (LMIV). Änderung nur Inhaber, mit Warnung + Protokoll. |
 | `available` | Ja/Nein | ja | c | FA-12 (B12) | „momentan aus" = `false`. Kein automatisches Zurücksetzen; von Hand wieder einschalten. |
-| `price_valid_from` | Datum | nein | c | FA-12 (Runde 47) | „gültig ab" — Datum ohne Uhrzeit, wirkt ab Tagesbeginn. **Künftig geplanter Preis → offen (siehe Fragen).** |
 | `sort_order` | Zahl | nein | c | FA-12 | — |
 
-### `menu_options` — bepreiste Extras · Klasse c
+> **Kein `base_price_cents` mehr (Runde 55).** `menu_items` trägt **keinen** Preis: Weil **jeder Artikel mindestens eine Variante** hat (ein Artikel ohne Größe genau eine **Standardvariante**, Runde 55), kommt der Preis **immer** aus `menu_item_variants.price_cents`. Ein Grundpreis am Artikel wäre eine **zweite Preis-Wahrheit** neben der Variante (Regel 9 „eine Speisekarte") und ist deshalb entfernt ([ENTSCHIEDEN Sirat 2026-09-23]). „Ohne Preis wird nichts angelegt" bleibt — der Preis liegt jetzt an der (Standard-)Variante.
+> **Kein `price_valid_from` mehr (Runde 54).** Im Piloten gibt es keine in der Zukunft geplanten Preise: Eine Preisänderung gilt **ab dem Speichern**, Bestellungen frieren ihren Preis ohnehin ein ([ENTSCHIEDEN Sirat 2026-09-23]). Ein Stichtags-Feld hätte keine Wirkung und entfällt. Eine Preis-Historie/`menu_item_scheduled_prices` ist **späterer Ausbau** (siehe Fragen).
+
+### `menu_options` — Extras · Klasse c
 
 | Feld | Typ | Pflicht | Klasse | Herkunft | Bemerkung |
 |---|---|---|---|---|---|
 | `id` | Kennung | ja | c | — | — |
 | `item_id` | Kennung | ja | c | FA-12 | Extra zu einem Gericht (z. B. „extra Zwiebeln"). |
 | `name` | Text | ja | c | FA-01/FA-12 (Runde 51) | — |
-| `surcharge_cents` | Cents | ja | c | FA-12 (Runde 51) | Aufpreis. **Größen-/variantenabhängig → offen (siehe Fragen):** ob dieser Wert je Variante existiert oder eine Regel gilt. Der **Server** rechnet den Aufpreis. |
+| `sort_order` | Zahl | nein | c | FA-12 | Reihenfolge. |
 
-### `menu_item_variants` — Größen/Varianten · Klasse c · **OFFEN**
+> **Kein `surcharge_cents` mehr an `menu_options` (Runde 54).** Der Aufpreis eines Extras ist **größenabhängig** und liegt je Paar (Extra × Variante) in `menu_option_variant_prices` ([ENTSCHIEDEN Sirat 2026-09-23]).
 
-> Nur Platzhalter. Ob und wie Varianten (z. B. „klein"/„groß") modelliert werden, ist **nicht entschieden** (FA-12 Runde 51). Vorschlag-Felder: `id`, `item_id`, `name`, `price_cents`. Der variantenabhängige Extra-Aufpreis (`menu_options`) hängt daran. → siehe Offene Fragen.
+### `menu_item_variants` — Größen/Varianten · Klasse c
+
+> Größen/Varianten je Artikel (z. B. „klein"/„groß"), **entschieden** (Sirat, Runde 54, 2026-09-23). **Jeder Artikel hat mindestens eine Variante** (Runde 55): ein Artikel **ohne Größe** (Getränk, Salat) bekommt **genau eine Standardvariante** — einheitliche Regel ohne Sonderfall. Der Artikelpreis kommt **immer** aus der gewählten (bzw. der Standard-)Variante `price_cents`; es gibt **keinen** `menu_items.base_price_cents` mehr. **Invariante:** mind. eine Variante je aktivem Artikel, **im Kern beim Speichern durchgesetzt** — `createMenuItem`/Update legt bei fehlender Größe automatisch die Standardvariante an (zusätzlich per CHECK/Trigger absicherbar). Zwei-Tenant-Test je Route/Abfrage.
+
+| Feld | Typ | Pflicht | Klasse | Herkunft | Bemerkung |
+|---|---|---|---|---|---|
+| `id` | Kennung | ja | c | — | — |
+| `item_id` | Kennung | ja | c | FA-12 (Runde 54) | Verweis auf `menu_items` (zusammengesetzt `(tenant_id, id)`). |
+| `name` | Text | ja | c | FA-12 (Runde 54) | z. B. „klein" \| „groß". |
+| `price_cents` | Cents | ja | c | FA-12 (Runde 54) | Preis des Artikels **in dieser Größe** (Ganzzahl). |
+| `sort_order` | Zahl | nein | c | FA-12 | Reihenfolge. |
+
+### `menu_option_variant_prices` — Aufpreis je Extra je Variante · Klasse c
+
+> **Neu (Runde 54).** Ein Satz je Paar (`option_id`, `variant_id`) trägt den **direkten** Aufpreis dieses Extras in dieser Größe — **kein Faktor, keine Staffel** ([ENTSCHIEDEN Sirat 2026-09-23]). Beispiel: extra Zwiebel = 50 Cent auf der kleinen Pizza, anderer Wert auf der großen. Der **Server** rechnet damit; `createOrder` friert den zutreffenden Aufpreis in `order_items.options_snapshot` ein. Eindeutigkeit: `unique (tenant_id, option_id, variant_id)`; beide FK zusammengesetzt `(tenant_id, id)`.
+
+| Feld | Typ | Pflicht | Klasse | Herkunft | Bemerkung |
+|---|---|---|---|---|---|
+| `id` | Kennung | ja | c | — | — |
+| `option_id` | Kennung | ja | c | FA-12 (Runde 54) | Verweis auf `menu_options`. |
+| `variant_id` | Kennung | ja | c | FA-12 (Runde 54) | Verweis auf `menu_item_variants`. Beide auf **denselben** `item_id` — per Validierung sichern. |
+| `surcharge_cents` | Cents | ja | c | FA-12 (Runde 54) | Aufpreis dieses Extras in dieser Größe (Ganzzahl in Cent). |
+
+> **Entschieden (variantenlose Artikel, Sirat Runde 55, 2026-09-23):** Es gibt Artikel mit Größen **und** Artikel mit nur einem Preis (Getränke, Salat), die dennoch Extras mit Aufpreis haben können. Da **jeder Artikel mindestens eine Variante** hat (ohne Größe genau eine **Standardvariante**), hängt der Extra-Aufpreis **immer** an einer Variante über `menu_option_variant_prices` — bei variantenlosen Artikeln an der Standardvariante, **ohne Sonderfall** und ohne Aufpreis am Artikel. Frage geschlossen.
 
 ---
 
@@ -269,11 +293,12 @@
 | `id` | Kennung | ja | b | — | — |
 | `order_id` | Kennung | ja | b | FA-01 | — |
 | `item_name_snapshot` | Text | ja | b | §5.2 | **Eingefrorener** Artikeltext — hängt nie an der aktuellen Karte. |
+| `variant_name_snapshot` | Text | nein | b | FA-12 (Runde 54/55) | **Eingefrorene** gewählte Größe/Variante (z. B. „klein"). Bleibt bei einem variantenlosen Artikel (Standardvariante) leer — die Position bezieht ihren Preis trotzdem aus der Variante. Der Preis steht in `unit_price_cents`. |
 | `quantity` | Zahl | ja | b | FA-01 | — |
-| `unit_price_cents` | Cents | ja | b | §5.2, DB 4.1 | **Eingefrorener** Einzelpreis. **[VORSCHLAG] brutto** (Gastro-üblich). Brutto/Netto-Festlegung ist eine Steuerberaterin-Frage → **S1**. |
+| `unit_price_cents` | Cents | ja | b | §5.2, DB 4.1 | **Eingefrorener** Einzelpreis = Preis der gewählten Variante (bei variantenlosen Artikeln der **Standardvariante** — kein `base_price_cents` mehr, Runde 55). **[VORSCHLAG] brutto** (Gastro-üblich). Brutto/Netto-Festlegung ist eine Steuerberaterin-Frage → **S1**. |
 | `tax_rate` | Status-Liste | ja | b | §5.2 | **Eingefrorener** Steuersatz. |
-| `tax_cents` | Cents | nein | b | DB 4.1 | **[VORSCHLAG]** Enthaltener USt-Betrag je Position, damit die Steuer-Aufteilung je Satz für Beleg/GoBD/DSFinV-K nachrechenbar ist — oder deterministisch aus `unit_price_cents` + `tax_rate` + Rundungsregel reproduzierbar. Vor der ersten (unveränderlichen) Zeile festlegen → **S1**. |
-| `options_snapshot` | JSON | nein | b | FA-01/12 (Runde 51), DB 4.2 | Gewählte Extras/Variante mit **eingefrorenem** Aufpreis (vom Server gerechnet). **Festes Zod-Schema:** je Eintrag `name` (Text) + `surcharge_cents` (Cents), sodass `line_total = (unit_price + Σ surcharge) × quantity` prüfbar bleibt (DB 4.2). |
+| `tax_cents` | Cents | nein | b | DB 4.1 | **[VORSCHLAG]** Enthaltener USt-Betrag je Position, damit die Steuer-Aufteilung je Satz für Beleg/GoBD/DSFinV-K nachrechenbar ist — oder deterministisch aus `unit_price_cents` + `tax_rate` + Rundungsregel reproduzierbar. **Bis zur Antwort der Steuerberaterin wird mit brutto + `tax_cents` gebaut; vor dem ersten echten Einsatz muss die Antwort vorliegen, danach sind die Zeilen unveränderlich.** → **S1**. |
+| `options_snapshot` | JSON | nein | b | FA-01/12 (Runde 51/54), DB 4.2 | Gewählte Extras mit **eingefrorenem** Aufpreis (vom Server je gewählter Variante aus `menu_option_variant_prices` aufgelöst). **Festes Zod-Schema:** je Eintrag `name` (Text) + `surcharge_cents` (Cents), sodass `line_total = (unit_price + Σ surcharge) × quantity` prüfbar bleibt (DB 4.2). |
 | `line_total_cents` | Cents | ja | b | FA-01 | Positionssumme. |
 
 ### `order_events` — Ereignisprotokoll (append-only) · Klasse b
@@ -388,9 +413,11 @@
 
 Diese Punkte brauchen eine **neue Entscheidung** (Sirat, architect, Anwalt oder Steuerberaterin) und werden hier **nicht** entschieden. Verweise auf die Befund-Nummern der Gegenlese-Berichte (DB … / C …).
 
-> **Frage an Sirat / architect (C B1):** Freigabe der **dritten Datenklasse (c) betrieblich**, die von Briefing §5.2 (zwei Klassen) abweicht (open-questions Q10, „nicht entschieden"). Vor der ersten Migration. K5-Lesart (c) = Speisekarte/Zonen/Geräte, ohne Kundenbezug/Buchung.
+> **Entschieden (C B1, ADR 0016):** Die **dritte Datenklasse (c) betrieblich** ist freigegeben ([ADR 0016](../../decisions/0016-drei-datenklassen.md), 2026-09-23) — dokumentierte Abweichung/Ergänzung zu Briefing §5.2. K5-Lesart (c) = Speisekarte/Zonen/Geräte/Tenant-Einstellungen, ohne Kundenbezug/Buchung. Nur die konkreten Fristen (Anwalt A1–A6) bleiben offen.
 
-> **Frage an Sirat (Options-/Varianten-Modell, FA-12 Runde 51, DB 9 / Q26):** Wie wird der **größen-/variantenabhängige Aufpreis** einer Extra-Zutat hinterlegt — `menu_item_variants` mit je Variante eigenem Aufpreis, oder eine Regel/Staffel? Betrifft `menu_options.surcharge_cents` und `menu_item_variants` (heute Platzhalter). **Bleibt offen (Q26)** — bis dahin `order_items.options_snapshot` nicht auf eine unklare Struktur einfrieren.
+> **Entschieden (Options-/Varianten-Modell, Q26, Sirat Runde 54, 2026-09-23):** Der **größen-/variantenabhängige Aufpreis** liegt als **direkter Wert** je Paar (`option_id`, `variant_id`) in `menu_option_variant_prices` — **kein Faktor, keine Staffel**. Größen stehen in `menu_item_variants` (mit eigenem `price_cents`), `menu_options` trägt keinen Aufpreis mehr. `order_items` friert Variante (`variant_name_snapshot`), Einzelpreis und die je Variante aufgelösten Extra-Aufpreise (`options_snapshot`) ein. **Q26 geschlossen.**
+
+> **Entschieden (variantenlose Artikel, Sirat Runde 55, 2026-09-23):** Es gibt Artikel mit Größen **und** Artikel mit nur einem Preis (Getränke, Salat) mit möglichen Extras. **Jeder Artikel hat mindestens eine Variante**; ein Artikel ohne Größe bekommt **genau eine Standardvariante** (einheitliche Regel, kein Sonderfall). Der Preis kommt **immer** aus der Variante — **`menu_items.base_price_cents` entfällt** (sonst zweite Preis-Wahrheit, Regel 9). Der Extra-Aufpreis hängt immer an einer Variante (`menu_option_variant_prices`). **DB-Invariante:** mind. eine Variante je aktivem Artikel, **im Kern beim Speichern durchgesetzt** (Standardvariante wird bei fehlender Größe automatisch angelegt; per CHECK/Trigger absicherbar). Die frühere „klein offen"-Restfrage ist geschlossen. *Nicht Teil dieser Aufgabe:* Oberflächen-Anzeige der Standardvariante ohne Größennamen → Hinweis K10.
 
 > **Frage an den Anwalt (C B9 / A3):** Löschfrist und endgültige Datenklasse für **`known_delivery_places`** (kann Personenbezug tragen, kein Rufnummern-Bezug).
 
@@ -400,13 +427,13 @@ Diese Punkte brauchen eine **neue Entscheidung** (Sirat, architect, Anwalt oder 
 
 > **Frage an den Anwalt (C B3 / A5):** Aufbewahrung der **Beschäftigtendaten** (`users`, `staff_shifts`, `cash_settlements` je Mitarbeiter), abgegrenzt von der Kundenlöschung.
 
-> **Frage an die Steuerberaterin (DB 4.1 / S1):** Ist der eingefrorene Positionspreis **brutto** (im Modell [VORSCHLAG]) und genügt der gespeicherte `tax_cents` je Position, oder verlangt DSFinV-K eine andere Netto-/Steuer-Führung? (Vor der ersten unveränderlichen `order_items`-Zeile.)
+> **Frage an die Steuerberaterin (DB 4.1 / S1):** Ist der eingefrorene Positionspreis **brutto** (im Modell [VORSCHLAG]) und genügt der gespeicherte `tax_cents` je Position, oder verlangt DSFinV-K eine andere Netto-/Steuer-Führung? **Bis zur Antwort wird mit brutto + `tax_cents` gebaut; vor dem ersten echten Einsatz muss die Antwort vorliegen, danach sind die `order_items`-Zeilen unveränderlich.**
 
 > **Frage an die Steuerberaterin (C B13 / S2):** Darf eine als Test markierte Bestellung (`orders.is_test`) an die TSE, oder muss sie fiskalisch außen vor bleiben? (Q2)
 
 > **Frage an die Steuerberaterin (C B4 / S3):** Sind die Freitextfelder des Tresen-Abschlusses (`comment`, `discrepancy_reason`) fiskalisch aufbewahrungspflichtig — und dürfen/sollen sie personenbezugsfrei gehalten werden?
 
-> **Frage an Sirat / architect:** Wie werden **künftig geplante Preise** („gültig ab" in der Zukunft) gespeichert — Preis-Historie/`menu_item_scheduled_prices` oder geplanter Änderungssatz? `menu_items.price_valid_from` trägt nur einen Stichtag.
+> **Entschieden (geplante Preise, Sirat Runde 54, 2026-09-23):** Im Piloten **keine** in der Zukunft geplanten Preise — eine Preisänderung gilt ab dem Speichern, Bestellungen frieren ihren Preis ohnehin ein. `menu_items.price_valid_from` **entfällt**. Preis-Historie/`menu_item_scheduled_prices` ist als **späterer Ausbau** vermerkt (nicht im Durchstich).
 
 > **Frage an die Steuerberaterin (Q2):** Darf `cash_settlements`/`orders.collected_*` Barzahlungen aufzeichnen, während beim Piloten daneben eine TSE-Kasse läuft — und braucht die Tresen-Erfassung selbst eine TSE (dann `fiscal_transactions` früher)? Ohne Antwort bleibt der Weg über `payments`/`fiscal_transactions` offen.
 

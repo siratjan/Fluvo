@@ -198,24 +198,26 @@ Die Fragen Q25–Q26 stammen aus dem Kreuzverhör von FA-01 (K1, Runde 51 vom 20
 **Beide Wege offen halten:** Zahlungsmöglichkeit und Sprachen als Stammdaten je Restaurant bauen, nicht fest verdrahten.
 **Wer:** Sirat, beim Termin beim Piloten am **2026-09-25** erfassen.
 
-### Q26 · Optionen-/Varianten-Modell: Extra-Aufpreis je Größe/Variante
-**Warum wichtig:** Extra-Zutaten sind bepreiste Optionen, deren **Aufpreis von der Größe/Variante** des Artikels abhängt (Sirat, Runde 51, entschieden — Beispiel: kleine Pizza, Extra Zwiebel = 50 Cent). Der Server rechnet den Aufpreis, die KI nennt ihn. Offen ist das **Datenmodell dahinter**: Wird der Aufpreis je (Option × Variante) als Matrix gepflegt, je Option mit Variantenfaktor, oder je Größenklasse — und wie viel Pflegeaufwand entsteht dem Inhaber. Das berührt FA-12 (Speisekarte), K5 (Datenmodell Option/Variante) und die Function-Call-Argumente in K4.
-**Beide Wege offen halten:** Option und Variante als eigene Datenformen im Schema; der Aufpreis hängt an der Kombination, nicht am Artikel allein.
-**Wer:** `architect`/`database-reviewer` bereiten das Modell in K5 vor; wie der Pilot Extras bepreist, ist ein Pilot-Fakt (mit Q25 beim Termin erfragen). Sirat bestätigt das Modell.
+### Q26 · Optionen-/Varianten-Modell: Extra-Aufpreis je Größe/Variante ✅ beantwortet (Sirat, 2026-09-23, Runde 54, ADR 0015 K5-Ausschnitt)
+**Warum wichtig:** Extra-Zutaten sind bepreiste Optionen, deren **Aufpreis von der Größe/Variante** des Artikels abhängt (Sirat, Runde 51, entschieden — Beispiel: kleine Pizza, Extra Zwiebel = 50 Cent). Der Server rechnet den Aufpreis, die KI nennt ihn. Offen war das **Datenmodell dahinter**: Wird der Aufpreis je (Option × Variante) als Matrix gepflegt, je Option mit Variantenfaktor, oder je Größenklasse — und wie viel Pflegeaufwand entsteht dem Inhaber. Das berührt FA-12 (Speisekarte), K5 (Datenmodell Option/Variante) und die Function-Call-Argumente in K4.
+**Antwort (Sirat, 2026-09-23, Runde 54 — K5-Durchgang):** Der **Aufpreis je Extra hängt an der Kombination (Option × Variante)** und wird als eigene Tabelle `menu_option_variant_prices` geführt — nicht am Artikel allein. **Keine geplanten Preise** („gültig ab"-Preisstand): `price_valid_from` entfällt, eine Preisänderung wirkt sofort und wird über das eingefrorene `order_items` je Bestellung historisiert. **Runde 55 (Nachtrag):** Jeder Artikel hat **mindestens eine Variante** (variantenlose Artikel bekommen eine Standardvariante), damit der Preis immer an der Variante hängt; `base_price_cents` entfällt. → FA-12, `konzept/modelle/er-durchstich.md`, `konzept/vertraege/datenwoerterbuch.md`. Wie der Pilot Extras real bepreist, bleibt ein Pilot-Fakt (mit Q25 beim Termin 2026-09-25).
+**Wer:** `architect`/`database-reviewer` haben das Modell in K5 vorbereitet; Sirat hat das Modell bestätigt. Kreuzverhör/Abnahme des K5-Ausschnitts stehen noch aus.
 
 ---
 
 Die Fragen Q27–Q30 sind die vier bei der Q13-Entscheidung (Runde 52, ADR 0015) **ausdrücklich nicht mitgeschlossenen** Rest-Unterpunkte aus dem K3-Zustandsmodell (`docs/konzept/modelle/zustand-bestellung.md`, Gegenlesen `_gegenlesen-K3.md`). Sie werden getrennt weitergeführt, damit Q13 nicht fälschlich als vollständig erledigt gilt.
 
-### Q27 · Verhältnis `delivered` ↔ „Abgerechnet" für Lieferungen ohne erfasste Zahlung
+### Q27 · Verhältnis `delivered` ↔ „Abgerechnet" für Lieferungen ohne erfasste Zahlung ✅ beantwortet (Sirat, 2026-09-23, Runde 53, ADR 0015 Nachtrag)
 **Warum wichtig:** Im Piloten erfasst fluvo bei einer Lieferung keine Zahlart und keinen Bar-Eingang (ADR 0008); das Tür-Bargeld läuft auf Papier. Offen: Ist `delivered` das **Ende** der Bestellung, oder folgt für eine Lieferung noch ein „Abgerechnet" (der spätere `settled`-Zustand), obwohl im System nie eine Zahlung steht?
+**Antwort (Sirat, 2026-09-23, Runde 53 — ADR 0015 Nachtrag, Punkt 1):** `delivered` ist im Piloten das **Ende der Lieferung** — es folgt **kein „Abgerechnet"**. Der Zustand `settled` wird später **mit der Fahrer-App eingeschoben** (ADR 0015 Punkt 4). `delivered` bleibt terminal (`TERMINAL_STATES`), Status als erweiterbare Literal-Union.
 **Beide Wege offen halten:** `delivered` als terminal führen (`TERMINAL_STATES`), aber `settled` als später einschiebbaren Zustand vorsehen (Status als erweiterbare Literal-Union, kein DB-Enum).
-**Wer:** Sirat, mit dem Fahrer-Teil bzw. der Abrechnung (nach dem ersten Piloten); fiskalisch → Steuerberaterin (Q2).
+**Wer:** Sirat (erledigt für den Piloten); fiskalisch → Steuerberaterin (Q2); `settled` fällig mit dem Fahrer-Teil (nach dem ersten Piloten).
 
-### Q28 · „Niemand drückt geliefert" — sichtbarer Abschlussweg am Tagesende
+### Q28 · „Niemand drückt geliefert" — sichtbarer Abschlussweg am Tagesende ✅ beantwortet (Sirat, 2026-09-23, Runde 53, ADR 0015 Nachtrag)
 **Warum wichtig:** Eine Liefer-Bestellung, bei der niemand „geliefert" auslöst, bliebe für immer in `received` — es entstehen Halden offener Bestellungen. Der Pilot braucht einen **sichtbaren Abschlussweg am Tagesende** (nicht still schließen).
+**Antwort (Sirat, 2026-09-23, Runde 53 — ADR 0015 Nachtrag, Punkt 2):** Der **Tagesabschluss (FA-16)** zeigt alle Bestellungen in `received`. Inhaber oder Annahme schließen sie **einzeln und bewusst** ab; das System **ändert keinen Status automatisch** (kein stilles Schließen). Der sichtbare Abschlussweg ist damit entschieden. **Verbleibende Detailfrage** (blockieren vs. nur anzeigen) → Q31.
 **Beide Wege offen halten:** Monitoring/Listen über die abgeleitete Menge `OPEN_STATES`, nicht über `status = 'received'` verdrahten; einen bewussten Endübergang am Tagesende vorsehen, ohne ihn jetzt zu automatisieren.
-**Wer:** Sirat (Ablauf am Tagesende), ausarbeiten in K3/K10.
+**Wer:** Sirat (Ablauf am Tagesende, erledigt); Detailfrage Q31; ausarbeiten in K3/K10.
 
 ### Q29 · Fahrer-Enden (Scan lösen, „nicht zustellbar", Bargeld-Kassensturz)
 **Warum wichtig:** Die Fahrer-bezogenen Endübergänge und das Wieder-Lösen des Fahrer-Scans sind mit dem Fahrer-Teil **zurückgestellt** (ADR 0008) und gehören nicht in das Piloten-Zustandsmodell. Vorgemerkt für die spätere Fahrer-App (FA-08/09/10).
@@ -226,3 +228,13 @@ Die Fragen Q27–Q30 sind die vier bei der Q13-Entscheidung (Runde 52, ADR 0015)
 **Warum wichtig:** `tenants.status` (in Einrichtung / startklar / gesperrt) ist ein eigenes Zustandsmodell, **nicht** das der Bestellung — es gehört zu **K9 / FA-20 / FA-21**, nicht in das Bestell-Zustandsmodell K3. Im Datenwörterbuch ist `tenants.status` als Platzhalter geführt.
 **Beide Wege offen halten:** Status als erweiterbare Literal-Union je Objekt; nicht mit dem Bestellstatus vermengen.
 **Wer:** Sirat, ausarbeiten in K9 (Rollen/Rechte, FA-20/FA-21).
+
+---
+
+Q31 ist die bei der Runde-53-Entscheidung (ADR 0015 Nachtrag) ausdrücklich als offen belassene Detailfrage aus Q28.
+
+### Q31 · Tagesabschluss mit offenen Bestellungen — blockieren oder nur anzeigen? ✅ beantwortet (Sirat, 2026-09-23, Runde 55, ADR 0015 Nachtrag)
+**Warum wichtig:** Der Tagesabschluss (FA-16) zeigt alle noch offenen Bestellungen in `received`; Inhaber oder Annahme schließen sie einzeln und bewusst ab, das System ändert keinen Status automatisch (ADR 0015 Nachtrag, Runde 53, Punkt 2 — klärt Q28). **Offen war:** Sollen offene Bestellungen den Tagesabschluss **blockieren** (kein Abschluss, solange etwas in `received` steht), oder werden sie nur **angezeigt** und der Abschluss ist trotzdem möglich?
+**Antwort (Sirat, 2026-09-23, Runde 55 — ADR 0015 Nachtrag):** **Blockieren.** Der Tagesabschluss ist gesperrt, solange noch eine Bestellung in `received` steht; er wird erst möglich, wenn **jede** offene Bestellung bewusst beendet wurde (`delivered` / `cancelled` / `ended_unpaid`, jeweils mit den bestehenden Rechten und Pflichtgründen). Das System ändert weiterhin **keinen** Status automatisch. → K3, FA-16 (Regel + Testszenario FA-16-T25). Die fiskalische Seite von `ended_unpaid`/Storno bleibt Q3 (Steuerberaterin).
+**Beide Wege offen halten:** Die offenen Bestellungen über die abgeleitete Menge `OPEN_STATES` ermitteln (nicht über `status = 'received'` verdrahten).
+**Wer:** Sirat (erledigt); ausarbeiten in K3/K10 (FA-16).
